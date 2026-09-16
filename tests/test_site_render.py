@@ -116,12 +116,23 @@ def test_question_and_forecast_pages_score_each_shape_its_own_way():
         print("ok test_question_and_forecast_pages_score_each_shape_its_own_way "
               "(skipped: no node on PATH)")
         return
-    data = _fixture_data()
+    # The page is rendered against what the pipeline actually publishes: the
+    # committed payload with `refresh.attach_round_scores` run over it, the
+    # step that marks a scored profile or ranking round resolved. A payload
+    # built before that step would leave the JS test re-implementing it.
+    from ssa import refresh
+    committed = os.path.join(ROOT, "site", "data.json")
+    assert os.path.exists(committed), "site/data.json is needed to render the question pages"
+    with open(committed) as fh:
+        data = json.load(fh)
+    refresh.attach_round_scores(data["rounds"], data.get("profile"), data.get("ranking"))
+    out = os.path.join(ROOT, "site", "_question_fixture.json")
+    with open(out, "w") as fh:
+        json.dump(data, fh)
     try:
-        got = _run(os.path.join(ROOT, "tests", "site", "render_question.js"), data)
+        got = _run(os.path.join(ROOT, "tests", "site", "render_question.js"), out)
     finally:
-        if data.endswith("_render_fixture.json"):
-            os.remove(data)
+        os.remove(out)
     sys.stdout.write(got.stdout)
     assert got.returncode == 0, got.stderr or got.stdout
     print("ok test_question_and_forecast_pages_score_each_shape_its_own_way")
@@ -394,6 +405,7 @@ if __name__ == "__main__":
     test_the_landing_page_names_each_round_shape_and_the_right_deadline()
     test_resizable_panels_and_chart_widths()
     test_model_filter_selection_and_persistence()
+    test_question_and_forecast_pages_score_each_shape_its_own_way()
     test_a_batch_is_open_until_its_last_question_closes()
     test_the_page_reads_only_keys_the_pipeline_publishes()
     test_no_page_promises_a_date_it_cannot_know()

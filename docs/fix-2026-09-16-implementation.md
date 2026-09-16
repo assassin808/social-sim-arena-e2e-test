@@ -1,6 +1,6 @@
 # 实现文档 · 2026-09-16 修复批次
 
-分支 `fix-ui-lifecycle`，提交 `d4e2df8c`，基于 fork `main`（`4b2b6f98`）。本地提交，未推送，未部署。
+分支 `fix-ui-lifecycle`，基于 fork `main`（`4b2b6f98`）：`d4e2df8c` 修复，`82fc9dcd` 本文档，第三个提交按评审意见收紧测试并抽出取分函数。本地提交，未推送，未部署。
 
 本批次修四个问题：两个正式站也存在的界面缺陷、一个测试生命周期的误报、一个会随日期变红的测试。不改任何评分规则，不改任何已发布的分数。
 
@@ -45,12 +45,15 @@
 
 `renderForecast` 同样分支：Released 卡片和分数卡片按题型显示 energy 或 loss 加 skill；ranking 预测下方增加"The released list"，profile 预测下方增加"The released profile"（并列显示该参赛者每格的预测均值）。
 
+**取分只有一处** `forecastScore(r, entrantId, f)`：返回 `{kind, metric, err, crps, score, skill}`。规则是：有发布分数用发布分数；数字题没有发布分数时才用正态闭式回退，Crowd 除外。题目页、单条页、参赛者页（`renderEntrant` 的按任务均值）三处都调它。这次缺陷的根源就是三处各写一遍、改了一处漏两处；评审后抽出来的。
+
 ### 测试
 
 - `tests/test_round_scores_status.py`：给三道假题和两份榜单，断言 profile / ranking 题变 resolved、`resolution.outcome` 和 `scores` 正确、没分数的题不动、数字题不动、resolved 计数为 3。
-- `tests/site/render_question.js`：用真实 `data.json` 跑 `index.html` 自己的脚本，渲染题目页和单条页，断言 ranking 题表头是 Loss、不含 CRPS、显示 released list、状态是 resolved；profile 题同理用 Energy；单条页显示对应 loss / energy。由 `tests/test_site_render.py` 新增的用例调用，进 CI 循环。
+- `tests/test_site_render.py` 新增用例（已加入文件底部的 `__main__`，CI 逐文件执行时会跑）：读提交的 `site/data.json`，调用真实的 `refresh.attach_round_scores`，写成临时 JSON 交给 JS 渲染，渲染完删除。
+- `tests/site/render_question.js`：只接受管线产出的数据，不自己修补。三类样例（已评分 ranking 题、已评分 profile 题、Crowd 有发布分数的已结算数字题）缺任何一个即失败，避免数据变薄时靠少渲染混过。断言：ranking 题表头是 Loss、不含 CRPS、显示 released list、状态 resolved；profile 题同理用 Energy；单条页显示对应 loss / energy；同一题在 profile / ranking 榜上有分但状态不是 resolved 时报"attach_round_scores 没跑"。
 
-这个 JS 测试自己做一遍 `attach_round_scores` 的镜像，所以对旧快照的 `data.json` 也能跑，测的是模板不是数据。
+第一版 JS 测试里复制了一遍 `attach_round_scores`，评审指出后改成上面这样：Python 产出的数据直接进页面，测试通过才说明两边接得上。
 
 ## 2. Crowd 单条预测页分数与题目页不一致
 
@@ -64,11 +67,11 @@ Crowd 预测是所有参赛者的分位数混合，不是正态分布。管线�
 
 ### 改动
 
-`renderForecast` 改成和题目页一样的规则：有发布分数就用发布分数；没有的话，Crowd 不算，其他预测才用正态闭式回退。
+题目页、单条页、参赛者页统一调用 `forecastScore`（见第 1 节）。参赛者页原本也在用正态回退算每个任务的平均 CRPS，Crowd 的参赛者页同样错，一并改掉。
 
 ### 测试
 
-`tests/site/render_question.js` 里找一道已结算、Crowd 有发布分数的数字题，断言题目页 Crowd 行和单条页都显示同一个两位小数。
+`tests/site/render_question.js` 里找一道已结算、Crowd 有发布分数的数字题，断言题目页 Crowd 行和单条页都显示同一个两位小数；再渲染 `#entrant/crowd`，断言该任务那一行的 CRPS 等于该任务所有已结算题发布分数的平均值（当前 Michigan 三道题，4.07）。
 
 ## 3. 生命周期测试每天 00:43 撞 404
 
@@ -102,8 +105,8 @@ for t in tests/test_*.py; do PYTHONPATH=. .local/venv/bin/python "$t" >/dev/null
 # 结果：67 通过；红的 4 个（test_contract_consistency、test_landing_audit、test_reliability、test_workflows）改动前就红，原因是 fork 把 refresh.yml 改名为 .disabled
 
 .local/venv/bin/python -m unittest tests.test_qa_lifecycle tests.test_qa_publish tests.test_qa_contract_fixes tests.test_qa_api_scoring
-node tests/site/render_question.js            # 对提交的 data.json
-node tests/site/render_question.js <patched>  # 对用新代码重算过的 data.json
+PYTHONPATH=. .local/venv/bin/python tests/test_site_render.py   # 内含题目页用例：真函数生成临时 payload 再交给 JS
+node tests/site/render_question.js site/data.json               # 直接喂旧快照会被拒绝：榜上有分的题不是 resolved
 ```
 
 页面用 headless Chrome 截图核对（本地起 `python3 -m http.server`，`data.json` 用新 `attach_round_scores` 重算过的副本）：
@@ -119,7 +122,7 @@ node tests/site/render_question.js <patched>  # 对用新代码重算过的 data
 
 ```
 docs/qa-ui.md                     +10   修复记录
-site/index.html                   +48 -11 roundKind、renderQuestion、renderForecast
+site/index.html                          roundKind、forecastScore、renderQuestion、renderForecast、renderEntrant
 ssa/refresh.py                    +23   attach_round_scores
 tests/site/render_question.js     +114  新
 tests/test_qa_lifecycle.py        +33

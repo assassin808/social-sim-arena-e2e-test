@@ -1021,9 +1021,9 @@ function renderEntrant(id){
   const score=live||bt, scoreSrc=live?'Season 0':(bt?'backtest':'');
   const rows=(data.rounds||[]).filter(r=>r.forecasts&&r.forecasts[id]).map(r=>{
     const f=r.forecasts[id], t=taskForRound(r), rel=(r.resolution||{}).value;
-    const err=(typeof rel==='number'&&typeof f.mean==='number')?Math.abs(f.mean-rel):null;
-    const crps=(err!==null&&typeof f.sd==='number')?crpsNormal(f.mean,f.sd,rel):null;
-    return {r,t,f,rel,err,crps};
+    // The published score, as on the question and forecast pages; the per-task means below sum it.
+    const s=forecastScore(r,id,f);
+    return {r,t,f,rel,err:s.err,crps:s.crps};
   }).sort((a,b)=>deadlineOf(b.r).localeCompare(deadlineOf(a.r)));
   const pct=(a,b)=>b?Math.round(100*a/b):0;
   // Coverage inside a window: the questions that closed in it, against the ones this entrant answered.
@@ -1148,6 +1148,21 @@ function forecastSummary(f, u, active){
 // The shape of a question's answer: a number, a joint profile of cells, or an ordered list. Older
 // definitions predate target_type and are numbers.
 function roundKind(r){ return r.target_type==='profile_energy'?'profile':r.target_type==='ranking_list'?'ranking':'number'; }
+// One forecast's score on one question, the same on every page that shows it. A number question is
+// scored by CRPS, a profile by the energy score, a ranking by its list loss; the pipeline publishes
+// them on the round (r.scores) and that is what is shown. Only a number forecast with no published
+// score falls back to the closed form, and never the crowd: its forecast is a quantile mixture, and
+// a normal refitted to its mean and sd is a different forecast with a different score (6.70 against
+// the published 5.52 on umich-2026-08-prelim, once shown on two pages of the same site).
+function forecastScore(r, entrantId, f){
+  const kind=roundKind(r), metric=kind==='profile'?'energy':kind==='ranking'?'loss':'crps';
+  const published=(r.scores||{})[entrantId]||null, rel=(r.resolution||{}).value;
+  const skill=published&&typeof published.skill==='number'?published.skill:null;
+  if(kind!=='number') return {kind, metric, err:null, crps:null, skill, score:published&&typeof published[metric]==='number'?published[metric]:null};
+  const err=(typeof rel==='number'&&f&&typeof f.mean==='number')?Math.abs(f.mean-rel):null;
+  const crps=published&&typeof published.crps==='number'?published.crps:(entrantId==='crowd'?null:(err!==null&&typeof f.sd==='number')?crpsNormal(f.mean,f.sd,rel):null);
+  return {kind, metric, err, crps, skill, score:null};
+}
 // ---- one question: what was asked, who answered when, what came out, who was closest ----
 function renderQuestion(roundId){
   const data=window.__data, host=document.getElementById('question-col'); if(!data||!host) return;
@@ -1161,15 +1176,10 @@ function renderQuestion(roundId){
   const state=!listed?'<span class="qdue closed">scheduled · listed '+esc(fmtLocal(r.published_at))+'</span>':active?'<span class="qdue live">open · due '+esc(fmtLocal(deadlineOf(r)))+'</span>':r.status==='resolved'?'<span class="qdue done">resolved · '+esc(fmtLocal(r.release_at))+'</span>':'<span class="qdue closed">'+esc(closedWhen(r))+'</span>';
   const f=r.forecasts||{}, ids=Object.keys(f), models=ids.filter(k=>!isBaseline(k));
   const nameOf=k=>forecasterName(k,data);
-  // A number question is scored by CRPS; a profile by the energy score and a ranking by its list loss,
-  // both published on the round by the pipeline (r.scores) and never recomputed here. The released
-  // answer of a list question is a vector or an ordered list, kept in r.resolution.outcome.
-  const kind=roundKind(r), metric=kind==='profile'?'energy':kind==='ranking'?'loss':'crps';
+  // The released answer of a list question is a vector or an ordered list, kept in r.resolution.outcome.
+  const kind=roundKind(r);
   const outcome=kind==='number'?null:((r.resolution||{}).outcome||null);
-  const rows=ids.map(k=>{ const x=f[k]; const published=(r.scores||{})[k]||null;
-    if(kind==='number'){ const err=(typeof rel==='number'&&typeof x.mean==='number')?Math.abs(x.mean-rel):null; const crps=published&&typeof published.crps==='number'?published.crps:(k==='crowd'?null:(err!==null&&typeof x.sd==='number')?crpsNormal(x.mean,x.sd,rel):null); return {k,x,err,crps,score:null,skill:null,base:isBaseline(k)}; }
-    const score=published&&typeof published[metric]==='number'?published[metric]:null, skill=published&&typeof published.skill==='number'?published.skill:null;
-    return {k,x,err:null,crps:null,score,skill,base:isBaseline(k)}; });
+  const rows=ids.map(k=>{ const x=f[k], s=forecastScore(r,k,x); return {k,x,err:s.err,crps:s.crps,score:s.score,skill:s.skill,base:isBaseline(k)}; });
   const resolved=kind==='number'?typeof rel==='number':(r.status==='resolved'&&!!outcome);
   const keyOf=row=>kind==='number'?(row.crps??row.err??Infinity):(row.score??Infinity);
   rows.sort((a,b)=> resolved ? (keyOf(a)-keyOf(b)) || String(a.x.filed||'').localeCompare(String(b.x.filed||'')) : String(a.x.filed||'zz').localeCompare(String(b.x.filed||'zz')));
@@ -1247,13 +1257,9 @@ function renderForecast(roundId, entrantId){
   } else {
     const what = typeof f.mean==='number' ? fmtNum(f.mean,u)+(typeof f.sd==='number'?' <span class="s" style="font-size:14px;color:var(--mut)">± '+fmtNum(f.sd,'')+'</span>':'') : esc(f.shape||'filed');
     const whatSub = typeof f.mean==='number' ? 'mean and standard deviation' : (f.shape==='profile'?(f.cells_n||Object.keys(f.cells||{}).length)+' cells, one number each':f.shape==='ranking'?'an ordered list of '+(f.items_n||(f.items||[]).length):'');
-    // The same score the question page shows: the pipeline's published one where there is one (a crowd
-    // forecast is a quantile mixture, and a normal fitted to its mean and sd is not it), else the closed form.
-    const kind=roundKind(r), metric=kind==='profile'?'energy':kind==='ranking'?'loss':'crps', published=(r.scores||{})[entrantId]||null;
+    // The same score the question page shows, from the same function.
+    const {kind, err, crps, score, skill}=forecastScore(r, entrantId, f);
     const outcome=kind==='number'?null:((r.resolution||{}).outcome||null), listDone=r.status==='resolved'&&!!outcome;
-    const err=(kind==='number'&&typeof rel==='number'&&typeof f.mean==='number')?Math.abs(f.mean-rel):null;
-    const crps=published&&typeof published.crps==='number'?published.crps:(entrantId==='crowd'?null:(err!==null&&typeof f.sd==='number')?crpsNormal(f.mean,f.sd,rel):null);
-    const score=kind!=='number'&&published&&typeof published[metric]==='number'?published[metric]:null, skill=published&&typeof published.skill==='number'?published.skill:null;
     h+='<div class="tiles">'
       +tile('Forecast', what, whatSub)
       +tile('Filed', f.filed?esc(fmtLocalZ(f.filed)):'·', 'lock at '+esc(fmtLocal(r.lock_at||deadlineOf(r))))
