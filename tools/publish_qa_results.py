@@ -14,9 +14,9 @@ def api(path,method='GET',payload=None,optional=False):
   raise RuntimeError('GitHub publication failed: '+r.stderr[:250])
  return json.loads(r.stdout) if r.stdout else None
 
-def publish(channel,root):
+def publish(channel,root,now=None):
  if os.environ.get('GITHUB_REPOSITORY')!=REPO:raise ValueError('Only the isolated test repository is allowed')
- now=datetime.now(timezone.utc)
+ now=now or datetime.now(timezone.utc)
  if now>=datetime(2026,10,1,tzinfo=timezone.utc):
   print('Observation window ended; publication skipped');return
  path=PATHS[channel];raw=(root/path).read_bytes()

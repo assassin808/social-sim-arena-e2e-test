@@ -18,6 +18,17 @@ ENTRANT = 'qa-persistence-public-source'
 END_AT = datetime(2026, 10, 1, tzinfo=timezone.utc)
 
 
+class NotYetPublished(Exception):
+    """Wikimedia has no list for a day that ended only hours ago.
+
+    The daily top list appears some hours after the UTC day closes (at 01:12
+    UTC on 2026-09-16 the 09-15 list was still 404), and the 00:43 run of the
+    workflow asks for yesterday before it exists. That is not a broken source;
+    the day is archived by a later run. `execute` treats it as "wait" while a
+    round is still pending. At resolution time every target day must already be
+    archived, so there it stays an error like any other."""
+
+
 def stamp(now):
     return now.astimezone(timezone.utc).isoformat().replace('+00:00', 'Z')
 
@@ -108,7 +119,13 @@ def execute(output, now, fetch, rounds=None):
                 for offset in range(7):
                     day = target_start + timedelta(days=offset)
                     if day < now.date() and day <= target_end:
-                        get_day(day, output, now, fetch)
+                        try:
+                            get_day(day, output, now, fetch)
+                        except NotYetPublished:
+                            # Days are archived in order, so nothing after
+                            # this one can exist yet either.
+                            row['target_day_waiting'] = str(day)
+                            break
                         row['target_days_archived'] += 1
                 row['reason'] = 'real release time has not arrived; no outcome or score invented'
             else:
@@ -155,6 +172,8 @@ def main():
                 retry = response.headers.get('Retry-After', '10')
                 time.sleep(min(30, max(2, int(retry))) if retry.isdigit() else 10)
                 continue
+            if response.status_code == 404:
+                raise NotYetPublished(url)
             response.raise_for_status()
             return response.content
     report = execute(args.output, now, fetch)

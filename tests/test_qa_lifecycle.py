@@ -30,6 +30,39 @@ class LifecycleTests(unittest.TestCase):
             self.assertEqual(final['rounds'][1]['status'],'resolved')
             self.assertEqual(len(calls),28)
 
+    def test_yesterday_not_yet_published_is_waiting_not_blocked(self):
+        # The 00:43 UTC run asks for yesterday before Wikimedia has produced
+        # it. While the round is pending that is a wait, not a failure: the
+        # forecast is untouched, the earlier days stay archived, and the next
+        # run picks the day up.
+        with tempfile.TemporaryDirectory() as td:
+            qa.execute(td,datetime(2026,9,15,tzinfo=timezone.utc),self.fake)
+            def lagging(url):
+                if url.endswith('/2026/09/23'):
+                    raise qa.NotYetPublished(url)
+                return self.fake(url)
+            report=qa.execute(td,datetime(2026,9,24,0,43,tzinfo=timezone.utc),lagging)
+            live=report['rounds'][1]
+            self.assertEqual(live['status'],'pending')
+            self.assertEqual(live['target_days_archived'],2)
+            self.assertEqual(live['target_day_waiting'],'2026-09-23')
+            self.assertTrue((Path(td)/'sources/2026-09-22.json').exists())
+            self.assertFalse((Path(td)/'sources/2026-09-23.json').exists())
+            later=qa.execute(td,datetime(2026,9,24,6,43,tzinfo=timezone.utc),self.fake)
+            self.assertEqual(later['rounds'][1]['target_days_archived'],3)
+            self.assertNotIn('target_day_waiting',later['rounds'][1])
+            # At resolution every target day must exist; a missing one is
+            # still a blocked round, never an invented outcome.
+            final=qa.execute(td,datetime(2026,9,29,15,tzinfo=timezone.utc),lagging)
+            self.assertEqual(final['rounds'][1]['status'],'resolved')
+            def gone(url):
+                raise qa.NotYetPublished(url)
+            with tempfile.TemporaryDirectory() as fresh:
+                qa.execute(fresh,datetime(2026,9,15,tzinfo=timezone.utc),self.fake)
+                blocked=qa.execute(fresh,datetime(2026,9,29,15,tzinfo=timezone.utc),gone)
+                self.assertEqual(blocked['rounds'][1]['status'],'blocked')
+                self.assertIn('NotYetPublished',blocked['rounds'][1]['reason'])
+
     def test_missed_deadline_cannot_be_backdated(self):
         with tempfile.TemporaryDirectory() as td:
             report=qa.execute(td,datetime(2026,9,20,tzinfo=timezone.utc),self.fake)

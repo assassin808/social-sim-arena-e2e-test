@@ -36,3 +36,13 @@
 ## 建议回归验收
 
 修复后应同时比对题目表、单条预测、任务榜的权威成绩；至少用 Crowd 分位数标量、已结算5-cell profile、已结算10-item ranking 三个固定历史样本。仅截图或单页渲染成功不能证明成绩一致。此报告不包含支付、外部写入、自动结算或免费模型可靠性验证。
+
+## 修复记录 · 2026-09-16
+
+UI-01 与 UI-02 已在分支 `fix-ui-lifecycle` 修复，回归测试 `tests/site/render_question.js`（由 `tests/test_site_render.py` 调用）同时比对题目页与单条预测页：
+
+- UI-01：单条预测页改为读管线发布的 `r.scores[entrant].crps`，只有没有发布分数的非 Crowd 预测才用正态闭式回退。Crowd 在两个页面均为 `5.52`。
+- UI-02：`ssa/refresh.py` 的 `attach_round_scores` 在把 profile / ranking 的分数写回题目时，同时把题目状态置为 `resolved`，并把结算结果放进 `resolution.outcome`（ranking 另有 `items`）。题目页按题型切换列头（Energy / Skill、Loss / Skill），显示已发布的 profile 向量或排名列表；单条预测页显示对应的 energy / loss 与 skill。
+- 页面模板用 headless Chrome 对 `#question/wiki-top10-2026-09-06`、`#question/trends-basket-2026-09-05`、`#forecast/umich-2026-08-prelim/crowd`、`#forecast/wiki-top10-2026-09-06/claude-opus-5-web-superfc` 截图核对。
+
+本 fork 不运行 `ssa.refresh`，所以提交的 `site/data.json` 里这两道题仍是 `awaiting_resolution`；状态修复在下一次真实 refresh 生成的 `data.json` 中生效。正式站有同样的缺陷（`refresh.py` 与上游一致），修复需要移植。

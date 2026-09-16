@@ -104,6 +104,29 @@ def test_the_landing_page_names_each_round_shape_and_the_right_deadline():
     print("ok test_the_landing_page_names_each_round_shape_and_the_right_deadline")
 
 
+def test_question_and_forecast_pages_score_each_shape_its_own_way():
+    """A profile question is scored by the energy score and a ranking by its
+    list loss. Rendered with the number template, both showed "no number
+    forecasts", Error / CRPS columns full of dots, and "locked · answer
+    expected" for a question whose scores were already on the board; and the
+    crowd's single-forecast page refitted a normal to its quantile mixture and
+    disagreed with the question page about its CRPS (6.70 against 5.52 on
+    umich-2026-08-prelim)."""
+    if not _node():
+        print("ok test_question_and_forecast_pages_score_each_shape_its_own_way "
+              "(skipped: no node on PATH)")
+        return
+    data = _fixture_data()
+    try:
+        got = _run(os.path.join(ROOT, "tests", "site", "render_question.js"), data)
+    finally:
+        if data.endswith("_render_fixture.json"):
+            os.remove(data)
+    sys.stdout.write(got.stdout)
+    assert got.returncode == 0, got.stderr or got.stdout
+    print("ok test_question_and_forecast_pages_score_each_shape_its_own_way")
+
+
 def test_resizable_panels_and_chart_widths():
     if not _node():
         print("ok test_resizable_panels_and_chart_widths (skipped: no node on PATH)")
