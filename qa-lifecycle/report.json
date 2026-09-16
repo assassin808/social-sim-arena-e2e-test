@@ -1,0 +1,77 @@
+{
+  "generated_at": "2026-09-16T00:01:59.820597Z",
+  "scope": "isolated-test-only",
+  "entrant": "qa-persistence-public-source",
+  "paid_calls": 0,
+  "llm_calls": 0,
+  "historical_replay_is_not_live_submission": true,
+  "schedule_end_exclusive": "2026-10-01T00:00:00Z",
+  "rounds": [
+    {
+      "round_id": "wiki-top10-2026-09-06",
+      "question": "The ordered top-10 articles on the English Wikipedia by pageviews for the week Mon Aug 31 - Sun Sep 6, 2026. The seven daily top-1000 lists published by Wikimedia are summed per article and ranked; Main_Page and every non-article namespace (Special:, Wikipedia:, Portal:, Help:, File:, Template:, Category:, Draft:, User:, Talk: and their _talk: variants) are excluded. Give the ten article titles in order, rank 1 first.",
+      "entrant": "qa-persistence-public-source",
+      "lock_at": "2026-08-28T14:00:00Z",
+      "release_at": "2026-09-08T14:00:00Z",
+      "mode": "historical_replay",
+      "status": "resolved",
+      "score": 0.9466326921358921,
+      "filed_at": "2026-09-15T23:45:19.917463Z",
+      "forecast": [
+        "Hayden_Panettiere",
+        "Wladimir_Klitschko",
+        "Jansen_Panettiere",
+        "Natalie_Harp",
+        "Spider-Man:_Brand_New_Day",
+        "The_Odyssey_(2026_film)",
+        "Deaths_in_2026",
+        "Awarapan_2",
+        "Google",
+        ".xxx"
+      ],
+      "outcome": [
+        "Killing_of_the_Clancy_children",
+        "Gloria_Steinem",
+        "Toxic_(2026_film)",
+        "Deaths_in_2026",
+        "Dolly_Parton",
+        ".xxx",
+        ".xyz",
+        "Hanuman_Ansh",
+        "Spider-Man:_Brand_New_Day",
+        "Coyote_vs._Acme"
+      ],
+      "resolved_at": "2026-09-15T23:45:54.063135Z"
+    },
+    {
+      "round_id": "wiki-top10-2026-09-27",
+      "question": "The ordered top-10 articles on the English Wikipedia by pageviews for the week Mon Sep 21 - Sun Sep 27, 2026. The seven daily top-1000 lists published by Wikimedia are summed per article and ranked; Main_Page and every non-article namespace (Special:, Wikipedia:, Portal:, Help:, File:, Template:, Category:, Draft:, User:, Talk: and their _talk: variants) are excluded. Give the ten article titles in order, rank 1 first.",
+      "entrant": "qa-persistence-public-source",
+      "lock_at": "2026-09-18T14:00:00Z",
+      "release_at": "2026-09-29T14:00:00Z",
+      "mode": "live_test",
+      "status": "pending",
+      "score": null,
+      "filed_at": "2026-09-15T23:45:54.063135Z",
+      "forecast": [
+        "Elizabeth_Holmes",
+        "September_11_attacks",
+        "Killing_of_the_Clancy_children",
+        "Ben_Shelton",
+        "Elena_Rybakina",
+        "Deaths_in_2026",
+        "Hanuman_Ansh",
+        "Aryna_Sabalenka",
+        "Mirzapur_(film)",
+        "Alexander_Zverev"
+      ],
+      "target_days_archived": 0,
+      "reason": "real release time has not arrived; no outcome or score invented"
+    }
+  ],
+  "_publication": {
+    "published_at": "2026-09-16T00:02:15.129191+00:00",
+    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/35038224771",
+    "source_commit": "4b2b6f984b13d6d47a86685bc25e8bf5b70e596b"
+  }
+}
