@@ -1,0 +1,19 @@
+{
+  "mode": "synthetic-clock-rehearsal",
+  "status": "passed",
+  "generated_at": "2026-09-17T06:30:17.036346Z",
+  "round_id": "qa-signed-clock-20260917-062616",
+  "entrant": "qa-signed-rehearsal",
+  "lock_at": "2026-09-17T06:30:16.313865Z",
+  "received_at": "2026-09-17T06:26:50.705615Z",
+  "revealed_forecast": {
+    "mean": 43,
+    "sd": 2
+  },
+  "synthetic_outcome": 42.5,
+  "crps": 0.5169996257988083,
+  "source_commit": "d7f4ae289b169b5386c0aca5ebb040588bf0c13d",
+  "ciphertext_sha256": "09c6a9bd3ac7ce4acff7ece538733f56aff24fe0bcb8e510d25e647a50197cf4",
+  "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/35189822609",
+  "note": "Real wall-clock deadline, GitHub storage and Actions reveal; controlled synthetic outcome, no paid model or real-season settlement."
+}
