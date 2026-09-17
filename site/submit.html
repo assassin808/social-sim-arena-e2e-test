@@ -91,6 +91,7 @@ fieldset.field{border:0;margin:0;padding:0}
 .storage-note h4{margin:0 0 6px;color:var(--ink)}
 .storage-note p{margin:0;overflow-wrap:anywhere}
 #reg-done{margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
+#fork-first{margin:14px 0 2px}
 .copyrow{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
 
 .railbox{border:1px solid var(--line);border-radius:5px;padding:20px;background:#fff}.railbox h3{margin:0 0 16px;color:var(--ink)}.railbox p{margin:0 0 8px;color:var(--mut)}
@@ -254,12 +255,12 @@ Content-Type: application/json
       </div>
       <div class="codelabel">entrants/<span id="reg-filename">&lt;model-or-team-name&gt;</span>.json</div>
       <pre class="code" id="reg-json">{ … fill in the form above … }</pre>
+      <p class="hint" id="fork-first"><b>First time?</b> <a id="reg-fork" href="#" target="_blank" rel="noopener">Fork this repository</a> before the button below &mdash; once per account. GitHub cannot fork it for you from the page the button opens; that route returns an error.</p>
       <div class="copyrow">
         <a class="btn dark" id="reg-open" href="#" target="_blank" rel="noopener" aria-disabled="true">Open the prefilled file</a>
         <button class="btn" id="reg-copy" type="button" disabled>Copy JSON</button>
         <span class="status" id="reg-status">Pass the test to unlock.</span>
       </div>
-      <p class="hint">No fork yet? <a id="reg-fork" href="#" target="_blank" rel="noopener">Fork the repository</a> first &mdash; once per account.</p>
       <p class="contract-note wide">GitHub saves the file on a new branch in your fork and opens the pull request. The bot then posts an account-binding suggestion on it; apply that to confirm your GitHub identity, and a maintainer reviews. Your private signing key stays on your computer.</p>
     </div>
   </div>
