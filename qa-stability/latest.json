@@ -1,5 +1,5 @@
 {
-  "run_at": "2026-09-17T01:11:47.932792+00:00",
+  "run_at": "2026-09-17T06:58:54.224780+00:00",
   "endpoint": "https://social-sim-arena-e2e-agent.vercel.app/forecast",
   "mode": "scheduled-fresh-request",
   "models": [
@@ -8,8 +8,8 @@
       "initial": [
         {
           "status": 200,
-          "seconds": 4.781,
-          "generation": "gen-1789607510-uNLWZKDFmxmQwMgDLrXy",
+          "seconds": 2.473,
+          "generation": "gen-1789628335-2xEv6rrm9jOmAWykPP8k",
           "cost": "0",
           "cache": "miss",
           "forecast": {
@@ -20,8 +20,8 @@
       ],
       "replay": {
         "status": 200,
-        "seconds": 0.661,
-        "generation": "gen-1789607510-uNLWZKDFmxmQwMgDLrXy",
+        "seconds": 0.17,
+        "generation": "gen-1789628335-2xEv6rrm9jOmAWykPP8k",
         "cost": "0",
         "cache": "hit",
         "forecast": {
@@ -37,24 +37,38 @@
       "model": "nex-agi/nex-n2.5-mini:free",
       "initial": [
         {
-          "status": 502,
-          "seconds": 45.878,
-          "generation": null,
-          "cost": null,
-          "cache": null
+          "status": 200,
+          "seconds": 1.378,
+          "generation": "gen-1789628337-nbyTiAJDwuPac3ctQV3u",
+          "cost": "0",
+          "cache": "miss",
+          "forecast": {
+            "mean": 50,
+            "sd": 1
+          }
         }
       ],
-      "replay": null,
-      "initial_all_passed": false,
+      "replay": {
+        "status": 200,
+        "seconds": 0.104,
+        "generation": "gen-1789628337-nbyTiAJDwuPac3ctQV3u",
+        "cost": "0",
+        "cache": "hit",
+        "forecast": {
+          "mean": 50,
+          "sd": 1
+        }
+      },
+      "initial_all_passed": true,
       "race_same_generation": null,
-      "replay_cache_hit": false
+      "replay_cache_hit": true
     },
     {
       "model": "google/gemma-4-31b-it:free",
       "initial": [
         {
           "status": 502,
-          "seconds": 0.688,
+          "seconds": 0.401,
           "generation": null,
           "cost": null,
           "cache": null
@@ -70,25 +84,25 @@
       "initial": [
         {
           "status": 200,
-          "seconds": 3.735,
-          "generation": "gen-1789607560-OWgO19leh5lcJmQhkSqL",
+          "seconds": 4.88,
+          "generation": "gen-1789628339-TOb6QHWNeSpi1YAoDqfV",
           "cost": "0",
           "cache": "miss",
           "forecast": {
             "mean": 50,
-            "sd": 5
+            "sd": 10
           }
         }
       ],
       "replay": {
         "status": 200,
-        "seconds": 0.333,
-        "generation": "gen-1789607560-OWgO19leh5lcJmQhkSqL",
+        "seconds": 0.107,
+        "generation": "gen-1789628339-TOb6QHWNeSpi1YAoDqfV",
         "cost": "0",
         "cache": "hit",
         "forecast": {
           "mean": 50,
-          "sd": 5
+          "sd": 10
         }
       },
       "initial_all_passed": true,
@@ -98,8 +112,8 @@
   ],
   "limitations": "A single run is not long-term reliability evidence. Failures retained. Runtime Cache is not a distributed lock.",
   "_publication": {
-    "published_at": "2026-09-17T01:12:58.962017+00:00",
-    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/35169585777",
+    "published_at": "2026-09-17T06:59:15.864141+00:00",
+    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/35192275720",
     "source_commit": "4b2b6f984b13d6d47a86685bc25e8bf5b70e596b"
   }
 }
