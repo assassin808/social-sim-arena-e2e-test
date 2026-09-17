@@ -1,0 +1,16 @@
+{
+  "entrant_id": "testing",
+  "name": "testing",
+  "organization": "testing",
+  "type": "participant",
+  "contact": "testing",
+  "github": "",
+  "keys": [
+    {
+      "id": "testing",
+      "alg": "ed25519",
+      "public": "kkLJ5TLfINf+Nkz8x1uGRxaaLoZkzijpiv3ANwWGptg=",
+      "revoked": false
+    }
+  ]
+}
