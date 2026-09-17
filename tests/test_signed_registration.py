@@ -256,6 +256,7 @@ process.stdout.write(JSON.stringify({
   record: registration(),
   forkUrl: element('reg-fork').href,
   openUrl: element('reg-open').href,
+  prUrl: element('reg-pr').href,
   status: element('reg-status').textContent
 }));
 """
@@ -270,6 +271,13 @@ process.stdout.write(JSON.stringify({
 
     assert seen["record"]["github"] == "", "the login addresses the fork, it does not claim identity"
     assert "a-new-account" not in json.dumps(seen["record"])
+
+    # Step 3 is the way out of the editor's default, which commits to the fork
+    # and opens nothing. Its base must be this repository, never the real arena
+    # this fork descends from.
+    assert seen["prUrl"] == ("https://github.com/assassin808/social-sim-arena-e2e-test"
+                             "/compare/main...a-new-account:main?expand=1")
+    assert "Social-Atoms" not in seen["prUrl"]
 
     values["entrant-login"] = "not a login"
     blocked = json.loads(subprocess.run(["node", "-e", harness, json.dumps(values)],

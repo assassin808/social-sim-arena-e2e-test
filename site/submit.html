@@ -91,6 +91,7 @@ fieldset.field{border:0;margin:0;padding:0}
 .storage-note h4{margin:0 0 6px;color:var(--ink)}
 .storage-note p{margin:0;overflow-wrap:anywhere}
 #reg-done{margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
+#reg-steps .btn{margin-top:8px}
 .copyrow{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
 
 .railbox{border:1px solid var(--line);border-radius:5px;padding:20px;background:#fff}.railbox h3{margin:0 0 16px;color:var(--ink)}.railbox p{margin:0 0 8px;color:var(--mut)}
@@ -255,13 +256,25 @@ Content-Type: application/json
       </div>
       <div class="codelabel">entrants/<span id="reg-filename">&lt;model-or-team-name&gt;</span>.json</div>
       <pre class="code" id="reg-json">{ … fill in the form above … }</pre>
+      <ol class="steps" id="reg-steps">
+        <li><span class="n">1</span><div>
+          <p><b>Fork the test repository.</b> Once per account &mdash; skip it if you already have one.</p>
+          <a class="btn" id="reg-fork" href="#" target="_blank" rel="noopener">Fork the repository</a>
+        </div></li>
+        <li><span class="n">2</span><div>
+          <p><b>Commit the prefilled file in your fork.</b> If the editor offers to start a pull request, take it &mdash; then you are done and step 3 is not for you.</p>
+          <a class="btn dark" id="reg-open" href="#" target="_blank" rel="noopener" aria-disabled="true">Open the file in your fork</a>
+        </div></li>
+        <li><span class="n">3</span><div>
+          <p><b>Open the pull request.</b> Only if step 2 committed straight to your fork without offering one. The base is already set to this repository.</p>
+          <a class="btn" id="reg-pr" href="#" target="_blank" rel="noopener" aria-disabled="true">Open the pull request</a>
+        </div></li>
+      </ol>
       <div class="copyrow">
-        <a class="btn" id="reg-fork" href="#" target="_blank" rel="noopener">Fork it first &mdash; once</a>
-        <a class="btn dark" id="reg-open" href="#" target="_blank" rel="noopener" aria-disabled="true">Open the file in your fork</a>
         <button class="btn" id="reg-copy" type="button" disabled>Copy JSON</button>
         <span class="status" id="reg-status">Pass the test to unlock.</span>
       </div>
-      <p class="contract-note wide">The prefilled file opens in <b>your own fork</b>. Save it on a new branch and open a PR to this test repository, base main; apply the bot's account-binding suggestion to confirm your GitHub identity, then wait for maintainer review. Your private signing key stays on your computer.</p>
+      <p class="contract-note wide">However the pull request gets opened, the rest is the same: the bot posts an account-binding suggestion on it, you apply that to confirm your GitHub identity, and a maintainer reviews. Your private signing key stays on your computer.</p>
     </div>
   </div>
   </form>
@@ -424,8 +437,14 @@ function syncRegistration(){
   // URL; the file still ships "github": "" for the bot to bind.
   const login = byId('entrant-login').value.trim();
   const loginOk = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/.test(login);
-  const fork = byId('reg-fork'), open = byId('reg-open');
+  const fork = byId('reg-fork'), open = byId('reg-open'), pr = byId('reg-pr');
   fork.href = REPO + '/fork';
+  // Step 3 exists because the editor's default in your own fork is to commit
+  // straight to main, which produces no pull request and no error -- the quiet
+  // dead end. This compare link pins the base repository too, so a fork of a
+  // fork cannot land its registration on the real arena.
+  pr.href = loginOk ? REPO+'/compare/'+REGISTRATION_BASE+'...'+login+':'+REGISTRATION_BASE+'?expand=1' : '#';
+  pr.setAttribute('aria-disabled', loginOk ? 'false' : 'true');
   ready = ready && loginOk;
   open.setAttribute('aria-disabled', ready ? 'false' : 'true');
   open.href = ready ? 'https://github.com/'+login+'/'+REPO.split('/').pop()+'/new/'+REGISTRATION_BASE+'?filename='+encodeURIComponent('entrants/'+reg.entrant_id+'.json')+'&value='+encodeURIComponent(json) : '#';
