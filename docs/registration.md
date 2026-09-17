@@ -5,11 +5,16 @@ to anything. A participant generates an Ed25519 key pair locally with
 `ssh-keygen` and only ever publishes the public half --
 see [generating-a-key.md](generating-a-key.md).
 
-1. Fill in the details and the public key, then click **Submit registration via
-   GitHub**. The page opens a prefilled `entrants/<id>.json`.
-2. GitHub walks you through forking if you do not have one. Save on a new branch
-   and open a pull request against **`main`** of
-   `assassin808/social-sim-arena-e2e-test`.
+1. Fork this repository, once per account. The page's **1 · Fork this
+   repository** button is the ordinary GitHub fork page, and it has to come
+   first: GitHub cannot serve a prefilled new-file page to someone without write
+   access, so step 2 without a fork answers 422 and shows a fork prompt instead.
+2. Fill in the details and the public key, then click **2 · Open the
+   prefilled file**. It opens `entrants/<id>.json` on this repository, and
+   because you cannot write here the editor offers only "create a new branch and
+   start a pull request" -- in your own fork it would preselect a direct commit,
+   which opens nothing and reports nothing. Open the pull request against
+   **`main`**.
 3. The file arrives with `"github": ""`. Validation fails on purpose until the
    identity is bound. A `pull_request_target` workflow reads the pull request
    author from GitHub's own metadata and posts an inline suggestion filling that
