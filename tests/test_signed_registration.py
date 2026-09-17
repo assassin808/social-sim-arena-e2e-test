@@ -81,7 +81,7 @@ def test_registration_form_builds_signed_and_endpoint_records():
     values = {
         "entrant-id": "signed-one", "entrant-name": "Signed One",
         "entrant-org": "Example Lab", "entrant-contact": "",
-        "entrant-github": "signed-one", "api-url": "https://example.test/forecast",
+        "entrant-login": "signed-one", "api-url": "https://example.test/forecast",
         "entrant-key-id": "forecast-key-1",
         "entrant-public-key": base64.b64encode(bytes(range(32))).decode("ascii"),
     }
@@ -126,7 +126,7 @@ process.stdout.write(JSON.stringify({endpoint, signed, externalUrl, ownerUrl, ui
     assert observed["externalUrl"] == observed["ownerUrl"]
     assert observed["signed"]["github"] == ""
     assert 'id="entrant-github"' not in html
-    assert "/assassin808/social-sim-arena-e2e-test/new/main?" in observed["ownerUrl"]
+    assert "/signed-one/social-sim-arena-e2e-test/new/main?" in observed["ownerUrl"]
     assert observed["endpoint"]["route"] == {
         "kind": "agent_api", "url": "https://example.test/forecast"}
     assert "keys" not in observed["endpoint"]
@@ -214,6 +214,69 @@ def test_the_client_reads_every_key_file_a_participant_might_have():
             assert loaded.public_key().public_bytes(
                 serialization.Encoding.Raw, serialization.PublicFormat.Raw) == want, name
 
+def test_step_two_opens_the_file_in_the_participants_own_fork():
+    """GitHub's inline fork-and-edit answered a brand-new account with "An
+    unexpected error occurred" and created nothing, so the page addresses the
+    fork itself. The login is for that address only: the filed record still
+    carries an empty github field for the bot to bind."""
+    with open(SUBMIT_PATH) as f:
+        html = f.read()
+    scripts = re.findall(r"<script>(.*?)</script>", html, re.DOTALL)
+    page_script = next(s for s in scripts if "function registration()" in s)
+    values = {
+        "entrant-id": "signed-one", "entrant-name": "Signed One",
+        "entrant-org": "Example Lab", "entrant-contact": "",
+        "entrant-login": "a-new-account", "api-url": "https://example.test/forecast",
+        "entrant-key-id": "forecast-key-1",
+        "entrant-public-key": base64.b64encode(bytes(range(32))).decode("ascii"),
+    }
+    harness = r"""
+const values = JSON.parse(process.argv[1]);
+const elements = {};
+function element(id) {
+  if (!elements[id]) elements[id] = {
+    id, value: values[id] || '', hidden: false, disabled: false, required: false,
+    textContent: '', className: '', innerHTML: '', href: '',
+    addEventListener() {}, setAttribute(name, value) { this[name] = value; },
+    checkValidity() { return true; }, reportValidity() {}
+  };
+  return elements[id];
+}
+const apiRadio = {value: 'agent_api', checked: false, addEventListener() {}};
+const signedRadio = {value: 'signed_post', checked: true, addEventListener() {}};
+global.document = {
+  getElementById: element,
+  querySelector() { return signedRadio.checked ? signedRadio : apiRadio; },
+  querySelectorAll() { return [apiRadio, signedRadio]; }
+};
+global.navigator = {clipboard: {writeText() {}}};
+""" + page_script + r"""
+syncRoute(); syncRegistration();
+process.stdout.write(JSON.stringify({
+  record: registration(),
+  forkUrl: element('reg-fork').href,
+  openUrl: element('reg-open').href,
+  status: element('reg-status').textContent
+}));
+"""
+    seen = json.loads(subprocess.run(["node", "-e", harness, json.dumps(values)],
+                                     check=True, capture_output=True, text=True).stdout)
+
+    assert seen["forkUrl"].endswith("/social-sim-arena-e2e-test/fork")
+    assert seen["openUrl"].startswith(
+        "https://github.com/a-new-account/social-sim-arena-e2e-test/new/main?")
+    assert "assassin808/social-sim-arena-e2e-test/new/" not in seen["openUrl"], \
+        "step 2 must not send anyone at a repository they cannot write to"
+
+    assert seen["record"]["github"] == "", "the login addresses the fork, it does not claim identity"
+    assert "a-new-account" not in json.dumps(seen["record"])
+
+    values["entrant-login"] = "not a login"
+    blocked = json.loads(subprocess.run(["node", "-e", harness, json.dumps(values)],
+                                        check=True, capture_output=True, text=True).stdout)
+    assert blocked["openUrl"] == "#"
+
+
 if __name__ == "__main__":
     test_existing_keyless_registrations_remain_valid()
     test_ed25519_public_keys_are_bounded_and_closed()
@@ -222,4 +285,5 @@ if __name__ == "__main__":
     test_the_form_takes_an_openssh_public_key_and_files_the_raw_bytes()
     test_the_form_refuses_what_is_not_an_ed25519_public_key()
     test_the_client_reads_every_key_file_a_participant_might_have()
+    test_step_two_opens_the_file_in_the_participants_own_fork()
     print("all signed registration tests passed")

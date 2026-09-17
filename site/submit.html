@@ -212,6 +212,11 @@ Content-Type: application/json
           <label for="entrant-key-id">Signing key id <span class="req">*</span></label>
           <input id="entrant-key-id" name="key_id" type="text" pattern="[A-Za-z0-9][A-Za-z0-9_.-]{0,63}" placeholder="forecast-key-1" autocomplete="off" spellcheck="false">
         </div>
+        <div class="field" id="github-login-field">
+          <label for="entrant-login">Your GitHub login <span class="req">*</span></label>
+          <input id="entrant-login" name="github_login" type="text" pattern="[A-Za-z0-9]([A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}" placeholder="octocat" autocomplete="off" spellcheck="false">
+          <p class="hint">Only used to address your fork in step 2. It is not written into the registration file &mdash; the bot fills that in from whoever opens the pull request, and you confirm it there.</p>
+        </div>
         <div class="field" id="public-key-field" hidden>
           <label for="entrant-public-key">Ed25519 public key <span class="req">*</span></label>
           <input id="entrant-public-key" name="public_key" type="text" placeholder="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA…" autocomplete="off" spellcheck="false">
@@ -255,11 +260,12 @@ Content-Type: application/json
       <div class="codelabel">entrants/<span id="reg-filename">&lt;model-or-team-name&gt;</span>.json</div>
       <pre class="code" id="reg-json">{ … fill in the form above … }</pre>
       <div class="copyrow">
-        <a class="btn dark" id="reg-open" href="#" target="_blank" rel="noopener" aria-disabled="true">Submit registration via GitHub</a>
+        <a class="btn" id="reg-fork" href="#" target="_blank" rel="noopener">1 &middot; Fork the test repository</a>
+        <a class="btn dark" id="reg-open" href="#" target="_blank" rel="noopener" aria-disabled="true">2 &middot; Open the file in your fork</a>
         <button class="btn" id="reg-copy" type="button" disabled>Copy JSON</button>
         <span class="status" id="reg-status">Pass the test to unlock.</span>
       </div>
-      <p class="contract-note wide">GitHub opens a prefilled registration file and guides you through forking if needed. Save on a new branch and open a PR to this test repository, base main. Apply the bot's account-binding suggestion to confirm your GitHub identity, then wait for maintainer review. Your private signing key stays on your computer.</p>
+      <p class="contract-note wide">Step 1 opens GitHub's fork page; skip it if you already have a fork. Step 2 opens the prefilled file <b>in your own fork</b>, where you can save it on a new branch and open a PR to this test repository, base main. Apply the bot's account-binding suggestion to confirm your GitHub identity, then wait for maintainer review. Your private signing key stays on your computer.</p>
     </div>
   </div>
   </form>
@@ -413,12 +419,23 @@ function syncRegistration(){
   const endpointOk = !signed && (apiProbePassed || browserBlocked) && /^https:\/\//.test(reg.route.url);
   const keyOk = signed && /^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$/.test(reg.keys[0].id) && /^[A-Za-z0-9+/]{43}=$/.test(reg.keys[0].public);
   const routeOk = endpointOk || keyOk;
-  const ready = routeOk && idOk && reg.name && reg.organization;
-  const open = byId('reg-open');
+  let ready = routeOk && idOk && reg.name && reg.organization;
+  // GitHub's inline "fork this repository to propose changes" is a single point
+  // of failure we do not control -- it has already answered a brand-new account
+  // with "An unexpected error occurred" and created nothing. So step 1 is its
+  // ordinary fork page, and step 2 addresses the participant's own fork, where
+  // they have write access and the prefill survives. The login only builds this
+  // URL; the file still ships "github": "" for the bot to bind.
+  const login = byId('entrant-login').value.trim();
+  const loginOk = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/.test(login);
+  const fork = byId('reg-fork'), open = byId('reg-open');
+  fork.href = REPO + '/fork';
+  ready = ready && loginOk;
   open.setAttribute('aria-disabled', ready ? 'false' : 'true');
-  open.href = ready ? REPO+'/new/'+REGISTRATION_BASE+'?filename='+encodeURIComponent('entrants/'+reg.entrant_id+'.json')+'&value='+encodeURIComponent(json) : '#';
+  open.href = ready ? 'https://github.com/'+login+'/'+REPO.split('/').pop()+'/new/'+REGISTRATION_BASE+'?filename='+encodeURIComponent('entrants/'+reg.entrant_id+'.json')+'&value='+encodeURIComponent(json) : '#';
   byId('reg-copy').disabled = !ready;
   byId('reg-status').textContent = !routeOk ? (signed ? 'Enter a key id and an Ed25519 public key: the ssh-ed25519 line from ssh-keygen, or the raw 32 bytes in base64.' : 'Pass the test to unlock.')
+    : !loginOk ? 'Enter your GitHub login so step 2 can open the file in your fork.'
     : !idOk ? 'Entrant id: lower-case letters, digits, . _ -, 2 to 48 characters.'
     : !reg.name || !reg.organization ? 'Fill in the display name and organization.'
     : !signed && browserBlocked ? 'Run the CLI probe before you open the pull request \u2014 this browser could not reach your endpoint.'
@@ -437,7 +454,7 @@ function syncRoute(){
   byId('entrant-public-key').required = signed;
   syncRegistration();
 }
-for (const id of ['api-url','entrant-id','entrant-name','entrant-org','entrant-contact','entrant-key-id','entrant-public-key']) byId(id).addEventListener('input', syncRegistration);
+for (const id of ['api-url','entrant-id','entrant-name','entrant-org','entrant-contact','entrant-key-id','entrant-public-key','entrant-login']) byId(id).addEventListener('input', syncRegistration);
 document.querySelectorAll('input[name="submission-route"]').forEach(input => input.addEventListener('change', syncRoute));
 byId('reg-copy').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText(byId('reg-json').textContent); byId('reg-status').textContent = 'Copied.'; } catch (e) { byId('reg-status').textContent = 'Copy failed; select the text above.'; }
