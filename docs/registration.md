@@ -1,8 +1,9 @@
 # Registering an entrant
 
 No OAuth, no account database, no typed-in username, and no bot with write access
-to anything. A participant generates an Ed25519 key pair locally and only ever
-publishes the public half.
+to anything. A participant generates an Ed25519 key pair locally with
+`ssh-keygen` and only ever publishes the public half --
+see [generating-a-key.md](generating-a-key.md).
 
 1. Fill in the details and the public key, then click **Submit registration via
    GitHub**. The page opens a prefilled `entrants/<id>.json`.

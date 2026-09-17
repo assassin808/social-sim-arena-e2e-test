@@ -214,8 +214,8 @@ Content-Type: application/json
         </div>
         <div class="field" id="public-key-field" hidden>
           <label for="entrant-public-key">Ed25519 public key <span class="req">*</span></label>
-          <input id="entrant-public-key" name="public_key" type="text" placeholder="base64-encoded 32-byte public key" autocomplete="off" spellcheck="false">
-          <p class="hint">Publish the public key only. Keep the private key in your submission client; never paste or upload it here.</p>
+          <input id="entrant-public-key" name="public_key" type="text" placeholder="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA…" autocomplete="off" spellcheck="false">
+          <p class="hint">Paste the line <code>ssh-keygen -t ed25519 -C '' -f arena-key</code> writes into <code>arena-key.pub</code>. The raw 32-byte base64 form is still accepted. Publish the public key only — never paste the private key here.</p>
         </div>
         <div class="field full">
           <label for="entrant-id">Entrant id <span class="req">*</span></label>
@@ -379,6 +379,18 @@ byId('api-test').addEventListener('click', async () => {
 // --- the registration file, built here and opened as a pull request there --
 const REPO = 'https://github.com/assassin808/social-sim-arena-e2e-test';
 const REGISTRATION_BASE = 'main';
+// Accept either the line ssh-keygen prints or the raw 32 bytes in base64. The
+// file always stores the raw form, so the repository keeps one spelling of a
+// key and the ssh comment -- a user name and a host name -- never reaches it.
+const SSH_ED25519_HEAD = '\x00\x00\x00\x0bssh-ed25519\x00\x00\x00\x20';
+function publicKeyRaw(text){
+  const value = (text || '').trim(), parts = value.split(/\s+/);
+  if (parts[0] !== 'ssh-ed25519') return value;
+  try {
+    const blob = atob(parts[1] || '');
+    return blob.length === 51 && blob.slice(0, 19) === SSH_ED25519_HEAD ? btoa(blob.slice(-32)) : '';
+  } catch (error) { return ''; }
+}
 function registration(){
   // The file is public. A signed-push entrant publishes only its public key;
   // the private key stays in the participant's submission client.
@@ -387,7 +399,7 @@ function registration(){
   if (contact) reg.contact = contact;
   reg.github = ''; // Filled by the PR author's account-binding suggestion.
   const signed = document.querySelector('input[name="submission-route"]:checked').value === 'signed_post';
-  if (signed) reg.keys = [{id: byId('entrant-key-id').value.trim(), alg: 'ed25519', public: byId('entrant-public-key').value.trim(), revoked: false}];
+  if (signed) reg.keys = [{id: byId('entrant-key-id').value.trim(), alg: 'ed25519', public: publicKeyRaw(byId('entrant-public-key').value), revoked: false}];
   else reg.route = {kind:'agent_api', url: byId('api-url').value.trim()};
   return reg;
 }
@@ -406,7 +418,7 @@ function syncRegistration(){
   open.setAttribute('aria-disabled', ready ? 'false' : 'true');
   open.href = ready ? REPO+'/new/'+REGISTRATION_BASE+'?filename='+encodeURIComponent('entrants/'+reg.entrant_id+'.json')+'&value='+encodeURIComponent(json) : '#';
   byId('reg-copy').disabled = !ready;
-  byId('reg-status').textContent = !routeOk ? (signed ? 'Enter a key id and a base64-encoded 32-byte Ed25519 public key.' : 'Pass the test to unlock.')
+  byId('reg-status').textContent = !routeOk ? (signed ? 'Enter a key id and an Ed25519 public key: the ssh-ed25519 line from ssh-keygen, or the raw 32 bytes in base64.' : 'Pass the test to unlock.')
     : !idOk ? 'Entrant id: lower-case letters, digits, . _ -, 2 to 48 characters.'
     : !reg.name || !reg.organization ? 'Fill in the display name and organization.'
     : !signed && browserBlocked ? 'Run the CLI probe before you open the pull request \u2014 this browser could not reach your endpoint.'

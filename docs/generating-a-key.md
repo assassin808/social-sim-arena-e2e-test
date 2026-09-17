@@ -3,83 +3,84 @@
 Registering binds one public key to your entrant. You keep the private half and
 sign every forecast with it; we never see it and cannot recover it.
 
-What the form wants is the **raw 32-byte Ed25519 public key, base64-encoded**:
-44 characters from `A-Z a-z 0-9 + /`, ending in `=`.
-
-```
-+f/MmhW389yF/NJVycQM0knDfv1cSzyFX/9YJg/9rN8=
-```
-
-## With the arena's tool
+## Make a key for the arena
 
 ```sh
-python tools/submit_signed_forecast.py --generate-key entrant.key
+ssh-keygen -t ed25519 -C '' -f arena-key
 ```
 
-It writes the private key to `entrant.key` with mode 600 and prints the public
-key. Paste what it prints.
+Press enter at the passphrase prompt, or set one and see *Passphrases* below.
+Two files appear: `arena-key` (private, keep it) and `arena-key.pub` (public).
+Paste the whole line from `arena-key.pub` into the registration form:
 
-## With openssl, if you would rather not clone anything
+```
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHjEplgjQzqgXZef8hVSx0pEDXke3BhI5TUOasW3gBY0
+```
+
+Two details are deliberate. **`-f arena-key`** makes a key for this and nothing
+else, so revoking it later costs you nothing — do not reuse `~/.ssh/id_ed25519`,
+which is the key that opens your servers. **`-C ''`** drops the comment, which by
+default is your user name and full host name:
+
+```
+assassin808@dhcp-206-87-221-115.ubcsecure.wireless.ubc.ca
+```
+
+Registrations are public files. The form strips the comment for you, but a key
+made without `-C ''` still has it sitting in `arena-key.pub` on your disk.
+
+## Signing with it
 
 ```sh
-openssl genpkey -algorithm ed25519 -out entrant.pem
-openssl pkey -in entrant.pem -outform DER  | tail -c 32 > entrant.key
-openssl pkey -in entrant.pem -pubout -outform DER | tail -c 32 | base64
-chmod 600 entrant.pem entrant.key
+python tools/submit_signed_forecast.py --key arena-key ...
 ```
 
-The last command prints the 44 characters to paste. `tail -c 32` is doing the
-real work in both: it drops the DER header and keeps only the key itself.
+The client reads the OpenSSH key directly. It also reads PEM (`openssl genpkey
+-algorithm ed25519`) and the raw 32 bytes that `--generate-key` writes, so a key
+registered before this change keeps working unchanged.
 
-The middle line matters. `openssl` writes PEM, and the arena's client wants the
-private key as the raw 32 bytes, so `entrant.key` -- not `entrant.pem` -- is what
-you pass to `--key`. Handing it the PEM fails with *An Ed25519 private key is 32
-bytes long*.
+## Passphrases
+
+A passphrase-protected key is fine. The client takes it from
+`SSA_KEY_PASSPHRASE`, and asks once if that is unset and you are at a terminal.
+An unattended run with no passphrase available fails immediately rather than
+hanging on a prompt.
+
+One wrinkle: decrypting an OpenSSH key needs `pip install bcrypt`, which
+`cryptography` does not pull in. The client says so if it hits it. For a key that
+a cron job uses, `-N ''` and file permissions are usually the better trade.
 
 ## Three things that are not this key
 
-Each of these looks plausible and will leave the **Submit registration** button
-grey, because the form checks the shape before it lets you through.
+Each looks plausible, and each leaves the **Submit registration** button grey.
 
-**A fingerprint.** Hex, usually 40 or 64 characters, no `=`:
-
-```
-bc041e513fc3e99eff8e6237ed5e429d49a85a8c        ← 40 hex characters, not a key
-```
-
-**An SSH key.** GitHub's own "Generating a new SSH key" page gives you this, and
-it is the easiest mistake to make because it is also base64:
+**A fingerprint** — hex, 40 or 64 characters, no `=`:
 
 ```
-AAAAC3NzaC1lZDI1NTE5AAAAIDsIGwPltuAH6k4c3D/zOIe0so4K0Rps7kVRawlvdGqd
+bc041e513fc3e99eff8e6237ed5e429d49a85a8c
 ```
 
-That is SSH wire format: a type tag, a length, and then the key. 68 characters,
-no `=`. **`ssh-keygen` is the wrong tool here** -- use one of the two commands
-above instead.
+**An `ssh-rsa` key.** Only Ed25519 is accepted. `ssh-keygen -t ed25519`.
 
-**The private key.** It never leaves your machine. If you paste something that
-starts with `-----BEGIN PRIVATE KEY-----`, generate a fresh pair and treat the
-old one as compromised.
+**The private key.** It never leaves your machine. If you paste something
+beginning `-----BEGIN`, make a fresh pair and treat the old one as compromised.
 
-## If you already have an SSH Ed25519 key
+## What lands in the repository
 
-A dedicated key is better -- one key, one job, and revoking it later costs you
-nothing else. If you want to reuse the one you have, the 32 bytes are inside it:
+The form converts your `ssh-ed25519` line to the 32 bytes inside it, so the file
+holds one canonical spelling and no comment:
 
-```sh
-cut -d' ' -f2 ~/.ssh/id_ed25519.pub | base64 -d | tail -c 32 | base64
+```json
+"keys": [{ "id": "arena-key-1", "alg": "ed25519",
+           "public": "eMSmWCNDOqBdl5/yFVLHSkQNeR7cGEjlNQ5qxbeAFjQ=", "revoked": false }]
 ```
-
-Signing then needs the matching private key in raw form, which `ssh-keygen` does
-not export directly. This is more work than generating a new pair.
 
 ## Looking after the private key
 
 - It stays on the machine that submits. Never commit it, never paste it into a
   page, an issue or a chat.
-- Losing it means opening a pull request to register a new key: add a new entry
-  with a new `id`, and set `"revoked": true` on the old one. Ownership stays with
-  your GitHub account, so nobody else can do this for you.
-- Answers you already filed stay verifiable: each one records the registration
-  commit it was checked against, so rotating a key does not invalidate history.
+- Losing it means opening a pull request to register a new key: add an entry with
+  a new `id` and set `"revoked": true` on the old one. Ownership stays with your
+  GitHub account, so nobody else can do this for you.
+- Answers you already filed stay verifiable: each records the registration commit
+  it was checked against, so rotating a key does not invalidate history.

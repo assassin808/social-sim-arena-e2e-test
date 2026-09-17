@@ -138,9 +138,88 @@ process.stdout.write(JSON.stringify({endpoint, signed, externalUrl, ownerUrl, ui
                               "testHidden": True, "copyDisabled": False}
 
 
+def ssh_public_line(raw, comment="someone@their-laptop.example"):
+    """What ssh-keygen writes: a length-prefixed type tag, the 32 bytes, a comment."""
+    blob = (b"\x00\x00\x00\x0bssh-ed25519" + len(raw).to_bytes(4, "big") + raw)
+    return "ssh-ed25519 " + base64.b64encode(blob).decode("ascii") + " " + comment
+
+
+def page_public_key(pasted):
+    """The value the page would put in the file for whatever was pasted."""
+    with open(SUBMIT_PATH) as f:
+        html = f.read()
+    converter = re.search(r"const SSH_ED25519_HEAD.*?\n}\n", html, re.DOTALL).group(0)
+    harness = converter + "\nprocess.stdout.write(publicKeyRaw(process.argv[1]));"
+    return subprocess.run(["node", "-e", harness, pasted],
+                          check=True, capture_output=True, text=True).stdout
+
+
+def test_the_form_takes_an_openssh_public_key_and_files_the_raw_bytes():
+    """ssh-keygen is what participants have, so the form accepts its output --
+    but the file keeps one spelling, and the ssh comment (a user name and a host
+    name) must not follow it into a public repository."""
+    raw = bytes(range(32))
+    canonical = base64.b64encode(raw).decode("ascii")
+
+    assert page_public_key(ssh_public_line(raw)) == canonical
+    assert page_public_key(ssh_public_line(raw, "")) == canonical
+    assert page_public_key("  " + ssh_public_line(raw) + "  ") == canonical
+    assert page_public_key(canonical) == canonical, "the old raw form still registers"
+
+    filed = ssh_public_line(raw)
+    assert "someone@their-laptop.example" not in page_public_key(filed)
+    assert not errors(entrant(keys=[{"id": "k1", "alg": "ed25519",
+                                     "public": page_public_key(filed)}]))
+
+
+def test_the_form_refuses_what_is_not_an_ed25519_public_key():
+    """Each of these has been pasted by somebody, and each must leave the button
+    disabled rather than file a registration nobody can verify."""
+    shape = re.compile(r"^[A-Za-z0-9+/]{43}=$")
+    for pasted in ("bc041e513fc3e99eff8e6237ed5e429d49a85a8c",   # a hex fingerprint
+                   "ssh-rsa AAAAB3NzaC1yc2EAAAADAQAB",           # the wrong algorithm
+                   "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5",           # truncated
+                   "ssh-ed25519 not-base64-at-all",
+                   ""):
+        assert not shape.match(page_public_key(pasted)), pasted
+
+
+def test_the_client_reads_every_key_file_a_participant_might_have():
+    """ssh-keygen, openssl and this tool write three different files for the
+    same key; all three must sign as the same entrant."""
+    import importlib.util
+    from cryptography.hazmat.primitives import serialization
+    from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+
+    spec = importlib.util.spec_from_file_location(
+        "ssa_submit_client", os.path.join(ROOT, "tools", "submit_signed_forecast.py"))
+    client = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(client)
+
+    key = Ed25519PrivateKey.generate()
+    raw = key.private_bytes(serialization.Encoding.Raw,
+                            serialization.PrivateFormat.Raw, serialization.NoEncryption())
+    pem = key.private_bytes(serialization.Encoding.PEM,
+                            serialization.PrivateFormat.PKCS8, serialization.NoEncryption())
+    ssh = key.private_bytes(serialization.Encoding.PEM,
+                            serialization.PrivateFormat.OpenSSH, serialization.NoEncryption())
+    want = key.public_key().public_bytes(serialization.Encoding.Raw,
+                                         serialization.PublicFormat.Raw)
+    with tempfile.TemporaryDirectory() as directory:
+        for name, blob in (("raw.key", raw), ("key.pem", pem), ("id_ed25519", ssh)):
+            path = os.path.join(directory, name)
+            with open(path, "wb") as f:
+                f.write(blob)
+            loaded = client.load_private_key(path)
+            assert loaded.public_key().public_bytes(
+                serialization.Encoding.Raw, serialization.PublicFormat.Raw) == want, name
+
 if __name__ == "__main__":
     test_existing_keyless_registrations_remain_valid()
     test_ed25519_public_keys_are_bounded_and_closed()
     test_validator_rejects_duplicate_key_ids_semantically()
     test_registration_form_builds_signed_and_endpoint_records()
+    test_the_form_takes_an_openssh_public_key_and_files_the_raw_bytes()
+    test_the_form_refuses_what_is_not_an_ed25519_public_key()
+    test_the_client_reads_every_key_file_a_participant_might_have()
     print("all signed registration tests passed")
