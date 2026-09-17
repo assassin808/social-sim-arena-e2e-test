@@ -1,0 +1,45 @@
+name: Isolated sealed forecast rehearsal
+
+on:
+  push:
+    branches: [qa-sealed-forecasts]
+    paths: [.github/workflows/qa-sealed-forecasts.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sealed-rehearsal:
+    if: github.repository == 'assassin808/social-sim-arena-e2e-test'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: Social-Atoms/social-sim-arena
+          ref: f7d62a854cd30bc4d026668ff3a9460ff39e9d61
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -r requirements.txt
+      - name: Test encryption, reveal, real audit CLI and regressions
+        env:
+          PYTHONPATH: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/seal-reports
+          git rev-parse HEAD | tee /tmp/seal-reports/implementation-sha.txt
+          for suite in seal replies stamps landing_audit spend crowd search contract; do
+            python "tests/test_${suite}.py" 2>&1 | tee "/tmp/seal-reports/${suite}.log"
+          done
+          echo 'Synthetic fixtures and ephemeral keys only; no provider calls or deployment.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Validated implementation f7d62a854cd30bc4d026668ff3a9460ff39e9d61.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sealed-forecast-rehearsal
+          path: /tmp/seal-reports
+          retention-days: 14
