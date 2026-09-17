@@ -2280,6 +2280,16 @@
       "target_type": "profile_energy",
       "tracker": "yougov_xtab",
       "unit": "percent approving"
+    },
+    {
+      "round_id": "qa-signed-clock-20260917-062616",
+      "question": "Synthetic QA only: exercise signed submission, real deadline, reveal and scoring. Fixed test outcome is 42.5.",
+      "lock_at": "2026-09-17T06:30:16.313865Z",
+      "release_at": "2026-09-17T06:30:17.313865Z",
+      "target_type": "continuous_normal",
+      "unit": "points",
+      "resolve": "Controlled QA fixture outcome 42.5; not a real source event.",
+      "series": "qa_synthetic"
     }
   ]
 }
