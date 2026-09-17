@@ -255,12 +255,13 @@ Content-Type: application/json
       </div>
       <div class="codelabel">entrants/<span id="reg-filename">&lt;model-or-team-name&gt;</span>.json</div>
       <pre class="code" id="reg-json">{ … fill in the form above … }</pre>
-      <p class="hint" id="fork-first"><b>First time?</b> <a id="reg-fork" href="#" target="_blank" rel="noopener">Fork this repository</a> before the button below &mdash; once per account. GitHub cannot fork it for you from the page the button opens; that route returns an error.</p>
       <div class="copyrow">
-        <a class="btn dark" id="reg-open" href="#" target="_blank" rel="noopener" aria-disabled="true">Open the prefilled file</a>
+        <a class="btn" id="reg-fork" href="#" target="_blank" rel="noopener">1 &middot; Fork this repository</a>
+        <a class="btn dark" id="reg-open" href="#" target="_blank" rel="noopener" aria-disabled="true">2 &middot; Open the prefilled file</a>
         <button class="btn" id="reg-copy" type="button" disabled>Copy JSON</button>
         <span class="status" id="reg-status">Pass the test to unlock.</span>
       </div>
+      <p class="hint" id="fork-first">Step 1 is once per account &mdash; skip it if you already have a fork. Do not skip it otherwise: without a fork, step 2 opens a page that cannot create one for you.</p>
       <p class="contract-note wide">GitHub saves the file on a new branch in your fork and opens the pull request. The bot then posts an account-binding suggestion on it; apply that to confirm your GitHub identity, and a maintainer reviews. Your private signing key stays on your computer.</p>
     </div>
   </div>

@@ -261,7 +261,8 @@ class SubmissionPrototype(unittest.TestCase):
                        'id="entrant-key-id"', 'id="entrant-public-key"',
                        '<h3>Your details</h3>', '>Display name <', '>Company / organization <',
                        'id="entrant-org"', 'id="reg-json"',
-                       '>Fork this repository</a>', '>Open the prefilled file</a>', 'id="fork-first"', '<h3>Test results</h3>', '<h3>API response</h3>'):
+                       '>1 &middot; Fork this repository</a>', '>2 &middot; Open the prefilled file</a>',
+                       'id="fork-first"', '<h3>Test results</h3>', '<h3>API response</h3>'):
             self.assertIn(marker, self.page)
         # Gone: the old bundle/questionnaire route, the method line, the
         # calendar, and everything from the questionnaire era.
