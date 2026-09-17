@@ -212,15 +212,10 @@ Content-Type: application/json
           <label for="entrant-key-id">Signing key id <span class="req">*</span></label>
           <input id="entrant-key-id" name="key_id" type="text" pattern="[A-Za-z0-9][A-Za-z0-9_.-]{0,63}" placeholder="forecast-key-1" autocomplete="off" spellcheck="false">
         </div>
-        <div class="field" id="github-login-field">
-          <label for="entrant-login">Your GitHub login <span class="req">*</span></label>
-          <input id="entrant-login" name="github_login" type="text" pattern="[A-Za-z0-9]([A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}" placeholder="octocat" autocomplete="off" spellcheck="false">
-          <p class="hint">Only used to address your fork in step 2. It is not written into the registration file &mdash; the bot fills that in from whoever opens the pull request, and you confirm it there.</p>
-        </div>
         <div class="field" id="public-key-field" hidden>
           <label for="entrant-public-key">Ed25519 public key <span class="req">*</span></label>
           <input id="entrant-public-key" name="public_key" type="text" placeholder="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAA…" autocomplete="off" spellcheck="false">
-          <p class="hint">Paste the line <code>ssh-keygen -t ed25519 -C '' -f arena-key</code> writes into <code>arena-key.pub</code>, comment and all — only the key itself is filed. The raw 32-byte base64 form still works. Publish the public key only; never paste the private key here. <a href="https://github.com/assassin808/social-sim-arena-e2e-test/blob/main/docs/generating-a-key.md" target="_blank" rel="noopener">How to generate this key</a>.</p>
+          <p class="hint">Paste the line from <code>arena-key.pub</code>; never paste the private key here. <a href="https://github.com/assassin808/social-sim-arena-e2e-test/blob/main/docs/generating-a-key.md" target="_blank" rel="noopener">How to make this key</a></p>
         </div>
         <div class="field full">
           <label for="entrant-id">Entrant id <span class="req">*</span></label>
@@ -252,20 +247,21 @@ Content-Type: application/json
           <label for="entrant-contact">Contact email</label>
           <input id="entrant-contact" name="contact" type="email" maxlength="120" placeholder="your.email@company.com" autocomplete="email">
         </div>
-        <div class="field">
-          <label>GitHub account</label>
-          <p class="hint">Your PR author becomes your registered account. After opening the PR, apply the bot's account-binding suggestion to confirm it. No username or GitHub authorization is requested here.</p>
+        <div class="field" id="github-login-field">
+          <label for="entrant-login">GitHub login <span class="req">*</span></label>
+          <input id="entrant-login" name="github_login" type="text" pattern="[A-Za-z0-9]([A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}" placeholder="octocat" autocomplete="off" spellcheck="false">
+          <p class="hint">Finds your fork. Not written into the file &mdash; the bot binds the account that opens the pull request.</p>
         </div>
       </div>
       <div class="codelabel">entrants/<span id="reg-filename">&lt;model-or-team-name&gt;</span>.json</div>
       <pre class="code" id="reg-json">{ … fill in the form above … }</pre>
       <div class="copyrow">
-        <a class="btn" id="reg-fork" href="#" target="_blank" rel="noopener">1 &middot; Fork the test repository</a>
-        <a class="btn dark" id="reg-open" href="#" target="_blank" rel="noopener" aria-disabled="true">2 &middot; Open the file in your fork</a>
+        <a class="btn" id="reg-fork" href="#" target="_blank" rel="noopener">Fork it first &mdash; once</a>
+        <a class="btn dark" id="reg-open" href="#" target="_blank" rel="noopener" aria-disabled="true">Open the file in your fork</a>
         <button class="btn" id="reg-copy" type="button" disabled>Copy JSON</button>
         <span class="status" id="reg-status">Pass the test to unlock.</span>
       </div>
-      <p class="contract-note wide">Step 1 opens GitHub's fork page; skip it if you already have a fork. Step 2 opens the prefilled file <b>in your own fork</b>, where you can save it on a new branch and open a PR to this test repository, base main. Apply the bot's account-binding suggestion to confirm your GitHub identity, then wait for maintainer review. Your private signing key stays on your computer.</p>
+      <p class="contract-note wide">The prefilled file opens in <b>your own fork</b>. Save it on a new branch and open a PR to this test repository, base main; apply the bot's account-binding suggestion to confirm your GitHub identity, then wait for maintainer review. Your private signing key stays on your computer.</p>
     </div>
   </div>
   </form>
