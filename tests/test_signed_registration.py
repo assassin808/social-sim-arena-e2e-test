@@ -81,7 +81,7 @@ def test_registration_form_builds_signed_and_endpoint_records():
     values = {
         "entrant-id": "signed-one", "entrant-name": "Signed One",
         "entrant-org": "Example Lab", "entrant-contact": "",
-        "entrant-login": "signed-one", "api-url": "https://example.test/forecast",
+        "api-url": "https://example.test/forecast",
         "entrant-key-id": "forecast-key-1",
         "entrant-public-key": base64.b64encode(bytes(range(32))).decode("ascii"),
     }
@@ -126,7 +126,7 @@ process.stdout.write(JSON.stringify({endpoint, signed, externalUrl, ownerUrl, ui
     assert observed["externalUrl"] == observed["ownerUrl"]
     assert observed["signed"]["github"] == ""
     assert 'id="entrant-github"' not in html
-    assert "/signed-one/social-sim-arena-e2e-test/new/main?" in observed["ownerUrl"]
+    assert "/assassin808/social-sim-arena-e2e-test/new/main?" in observed["ownerUrl"]
     assert observed["endpoint"]["route"] == {
         "kind": "agent_api", "url": "https://example.test/forecast"}
     assert "keys" not in observed["endpoint"]
@@ -214,11 +214,10 @@ def test_the_client_reads_every_key_file_a_participant_might_have():
             assert loaded.public_key().public_bytes(
                 serialization.Encoding.Raw, serialization.PublicFormat.Raw) == want, name
 
-def test_step_two_opens_the_file_in_the_participants_own_fork():
-    """GitHub's inline fork-and-edit answered a brand-new account with "An
-    unexpected error occurred" and created nothing, so the page addresses the
-    fork itself. The login is for that address only: the filed record still
-    carries an empty github field for the bot to bind."""
+def test_the_file_opens_against_this_repository_so_a_pull_request_is_the_only_way():
+    """In their own fork the editor preselects a direct commit, which opens no
+    pull request and reports no error. Aimed here, where they have no write
+    access, GitHub offers only "create a new branch and start a pull request"."""
     with open(SUBMIT_PATH) as f:
         html = f.read()
     scripts = re.findall(r"<script>(.*?)</script>", html, re.DOTALL)
@@ -226,8 +225,7 @@ def test_step_two_opens_the_file_in_the_participants_own_fork():
     values = {
         "entrant-id": "signed-one", "entrant-name": "Signed One",
         "entrant-org": "Example Lab", "entrant-contact": "",
-        "entrant-login": "a-new-account", "api-url": "https://example.test/forecast",
-        "entrant-key-id": "forecast-key-1",
+        "api-url": "https://example.test/forecast", "entrant-key-id": "forecast-key-1",
         "entrant-public-key": base64.b64encode(bytes(range(32))).decode("ascii"),
     }
     harness = r"""
@@ -252,37 +250,15 @@ global.document = {
 global.navigator = {clipboard: {writeText() {}}};
 """ + page_script + r"""
 syncRoute(); syncRegistration();
-process.stdout.write(JSON.stringify({
-  record: registration(),
-  forkUrl: element('reg-fork').href,
-  openUrl: element('reg-open').href,
-  prUrl: element('reg-pr').href,
-  status: element('reg-status').textContent
-}));
+process.stdout.write(JSON.stringify({record: registration(),
+  forkUrl: element('reg-fork').href, openUrl: element('reg-open').href}));
 """
     seen = json.loads(subprocess.run(["node", "-e", harness, json.dumps(values)],
                                      check=True, capture_output=True, text=True).stdout)
-
-    assert seen["forkUrl"].endswith("/social-sim-arena-e2e-test/fork")
     assert seen["openUrl"].startswith(
-        "https://github.com/a-new-account/social-sim-arena-e2e-test/new/main?")
-    assert "assassin808/social-sim-arena-e2e-test/new/" not in seen["openUrl"], \
-        "step 2 must not send anyone at a repository they cannot write to"
-
-    assert seen["record"]["github"] == "", "the login addresses the fork, it does not claim identity"
-    assert "a-new-account" not in json.dumps(seen["record"])
-
-    # Step 3 is the way out of the editor's default, which commits to the fork
-    # and opens nothing. Its base must be this repository, never the real arena
-    # this fork descends from.
-    assert seen["prUrl"] == ("https://github.com/assassin808/social-sim-arena-e2e-test"
-                             "/compare/main...a-new-account:main?expand=1")
-    assert "Social-Atoms" not in seen["prUrl"]
-
-    values["entrant-login"] = "not a login"
-    blocked = json.loads(subprocess.run(["node", "-e", harness, json.dumps(values)],
-                                        check=True, capture_output=True, text=True).stdout)
-    assert blocked["openUrl"] == "#"
+        "https://github.com/assassin808/social-sim-arena-e2e-test/new/main?")
+    assert seen["forkUrl"].endswith("/social-sim-arena-e2e-test/fork")
+    assert seen["record"]["github"] == "", "the bot binds the owner, the form never claims one"
 
 
 if __name__ == "__main__":
@@ -293,5 +269,5 @@ if __name__ == "__main__":
     test_the_form_takes_an_openssh_public_key_and_files_the_raw_bytes()
     test_the_form_refuses_what_is_not_an_ed25519_public_key()
     test_the_client_reads_every_key_file_a_participant_might_have()
-    test_step_two_opens_the_file_in_the_participants_own_fork()
+    test_the_file_opens_against_this_repository_so_a_pull_request_is_the_only_way()
     print("all signed registration tests passed")

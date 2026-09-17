@@ -260,9 +260,8 @@ class SubmissionPrototype(unittest.TestCase):
                        '>Forecast endpoint URL <', '>Entrant id <', 'id="entrant-id"',
                        'id="entrant-key-id"', 'id="entrant-public-key"',
                        '<h3>Your details</h3>', '>Display name <', '>Company / organization <',
-                       'id="entrant-org"', 'id="entrant-login"', 'id="reg-json"',
-                       '>Fork the repository</a>', '>Open the file in your fork</a>',
-                       '>Open the pull request</a>', 'id="reg-steps"', '<h3>Test results</h3>', '<h3>API response</h3>'):
+                       'id="entrant-org"', 'id="reg-json"',
+                       '>Fork the repository</a>', '>Open the prefilled file</a>', '<h3>Test results</h3>', '<h3>API response</h3>'):
             self.assertIn(marker, self.page)
         # Gone: the old bundle/questionnaire route, the method line, the
         # calendar, and everything from the questionnaire era.
@@ -331,10 +330,8 @@ class SubmissionPrototype(unittest.TestCase):
         self.assertIn("else reg.route", builder)
         self.assertIn("reg.github = ''", builder)
         self.assertIn("'/new/'+REGISTRATION_BASE+'?filename='", self.page)
-        self.assertIn("'https://github.com/'+login+'/'", self.page)
         self.assertIn("encodeURIComponent('entrants/'+reg.entrant_id+'.json')", self.page)
-        self.assertIn("let ready = routeOk && idOk && reg.name && reg.organization;", self.page)
-        self.assertIn("ready = ready && loginOk", self.page)
+        self.assertIn("const ready = routeOk && idOk && reg.name && reg.organization;", self.page)
         self.assertNotIn("/api/v1/registrations", self.page)
         self.assertNotIn('type="password"', self.page)
         self.assertIn("never paste the private key here", self.page)

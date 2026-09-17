@@ -91,7 +91,6 @@ fieldset.field{border:0;margin:0;padding:0}
 .storage-note h4{margin:0 0 6px;color:var(--ink)}
 .storage-note p{margin:0;overflow-wrap:anywhere}
 #reg-done{margin-top:20px;padding-top:20px;border-top:1px solid var(--line)}
-#reg-steps .btn{margin-top:8px}
 .copyrow{display:flex;align-items:center;gap:10px;margin-top:10px;flex-wrap:wrap}
 
 .railbox{border:1px solid var(--line);border-radius:5px;padding:20px;background:#fff}.railbox h3{margin:0 0 16px;color:var(--ink)}.railbox p{margin:0 0 8px;color:var(--mut)}
@@ -248,33 +247,20 @@ Content-Type: application/json
           <label for="entrant-contact">Contact email</label>
           <input id="entrant-contact" name="contact" type="email" maxlength="120" placeholder="your.email@company.com" autocomplete="email">
         </div>
-        <div class="field" id="github-login-field">
-          <label for="entrant-login">GitHub login <span class="req">*</span></label>
-          <input id="entrant-login" name="github_login" type="text" pattern="[A-Za-z0-9]([A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}" placeholder="octocat" autocomplete="off" spellcheck="false">
-          <p class="hint">Finds your fork. Not written into the file &mdash; the bot binds the account that opens the pull request.</p>
+        <div class="field">
+          <label>GitHub account</label>
+          <p class="hint">Whoever opens the pull request becomes the owner. The bot suggests it there; you confirm with one click.</p>
         </div>
       </div>
       <div class="codelabel">entrants/<span id="reg-filename">&lt;model-or-team-name&gt;</span>.json</div>
       <pre class="code" id="reg-json">{ … fill in the form above … }</pre>
-      <ol class="steps" id="reg-steps">
-        <li><span class="n">1</span><div>
-          <p><b>Fork the test repository.</b> Once per account &mdash; skip it if you already have one.</p>
-          <a class="btn" id="reg-fork" href="#" target="_blank" rel="noopener">Fork the repository</a>
-        </div></li>
-        <li><span class="n">2</span><div>
-          <p><b>Commit the prefilled file in your fork.</b> If the editor offers to start a pull request, take it &mdash; then you are done and step 3 is not for you.</p>
-          <a class="btn dark" id="reg-open" href="#" target="_blank" rel="noopener" aria-disabled="true">Open the file in your fork</a>
-        </div></li>
-        <li><span class="n">3</span><div>
-          <p><b>Open the pull request.</b> Only if step 2 committed straight to your fork without offering one. The base is already set to this repository.</p>
-          <a class="btn" id="reg-pr" href="#" target="_blank" rel="noopener" aria-disabled="true">Open the pull request</a>
-        </div></li>
-      </ol>
       <div class="copyrow">
+        <a class="btn dark" id="reg-open" href="#" target="_blank" rel="noopener" aria-disabled="true">Open the prefilled file</a>
         <button class="btn" id="reg-copy" type="button" disabled>Copy JSON</button>
         <span class="status" id="reg-status">Pass the test to unlock.</span>
       </div>
-      <p class="contract-note wide">However the pull request gets opened, the rest is the same: the bot posts an account-binding suggestion on it, you apply that to confirm your GitHub identity, and a maintainer reviews. Your private signing key stays on your computer.</p>
+      <p class="hint">No fork yet? <a id="reg-fork" href="#" target="_blank" rel="noopener">Fork the repository</a> first &mdash; once per account.</p>
+      <p class="contract-note wide">GitHub saves the file on a new branch in your fork and opens the pull request. The bot then posts an account-binding suggestion on it; apply that to confirm your GitHub identity, and a maintainer reviews. Your private signing key stays on your computer.</p>
     </div>
   </div>
   </form>
@@ -428,29 +414,18 @@ function syncRegistration(){
   const endpointOk = !signed && (apiProbePassed || browserBlocked) && /^https:\/\//.test(reg.route.url);
   const keyOk = signed && /^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$/.test(reg.keys[0].id) && /^[A-Za-z0-9+/]{43}=$/.test(reg.keys[0].public);
   const routeOk = endpointOk || keyOk;
-  let ready = routeOk && idOk && reg.name && reg.organization;
-  // GitHub's inline "fork this repository to propose changes" is a single point
-  // of failure we do not control -- it has already answered a brand-new account
-  // with "An unexpected error occurred" and created nothing. So step 1 is its
-  // ordinary fork page, and step 2 addresses the participant's own fork, where
-  // they have write access and the prefill survives. The login only builds this
-  // URL; the file still ships "github": "" for the bot to bind.
-  const login = byId('entrant-login').value.trim();
-  const loginOk = /^[A-Za-z0-9](?:[A-Za-z0-9]|-(?=[A-Za-z0-9])){0,38}$/.test(login);
-  const fork = byId('reg-fork'), open = byId('reg-open'), pr = byId('reg-pr');
-  fork.href = REPO + '/fork';
-  // Step 3 exists because the editor's default in your own fork is to commit
-  // straight to main, which produces no pull request and no error -- the quiet
-  // dead end. This compare link pins the base repository too, so a fork of a
-  // fork cannot land its registration on the real arena.
-  pr.href = loginOk ? REPO+'/compare/'+REGISTRATION_BASE+'...'+login+':'+REGISTRATION_BASE+'?expand=1' : '#';
-  pr.setAttribute('aria-disabled', loginOk ? 'false' : 'true');
-  ready = ready && loginOk;
+  const ready = routeOk && idOk && reg.name && reg.organization;
+  // Aimed at this repository, not at the participant's fork. Without write
+  // access GitHub offers only "create a new branch and start a pull request" --
+  // in their own fork it preselects a direct commit, which opens nothing and
+  // reports nothing. Verified on an account that already had a fork: no fork
+  // wall, and no direct-commit option.
+  byId('reg-fork').href = REPO + '/fork';
+  const open = byId('reg-open');
   open.setAttribute('aria-disabled', ready ? 'false' : 'true');
-  open.href = ready ? 'https://github.com/'+login+'/'+REPO.split('/').pop()+'/new/'+REGISTRATION_BASE+'?filename='+encodeURIComponent('entrants/'+reg.entrant_id+'.json')+'&value='+encodeURIComponent(json) : '#';
+  open.href = ready ? REPO+'/new/'+REGISTRATION_BASE+'?filename='+encodeURIComponent('entrants/'+reg.entrant_id+'.json')+'&value='+encodeURIComponent(json) : '#';
   byId('reg-copy').disabled = !ready;
   byId('reg-status').textContent = !routeOk ? (signed ? 'Enter a key id and an Ed25519 public key: the ssh-ed25519 line from ssh-keygen, or the raw 32 bytes in base64.' : 'Pass the test to unlock.')
-    : !loginOk ? 'Enter your GitHub login so step 2 can open the file in your fork.'
     : !idOk ? 'Entrant id: lower-case letters, digits, . _ -, 2 to 48 characters.'
     : !reg.name || !reg.organization ? 'Fill in the display name and organization.'
     : !signed && browserBlocked ? 'Run the CLI probe before you open the pull request \u2014 this browser could not reach your endpoint.'
@@ -469,7 +444,7 @@ function syncRoute(){
   byId('entrant-public-key').required = signed;
   syncRegistration();
 }
-for (const id of ['api-url','entrant-id','entrant-name','entrant-org','entrant-contact','entrant-key-id','entrant-public-key','entrant-login']) byId(id).addEventListener('input', syncRegistration);
+for (const id of ['api-url','entrant-id','entrant-name','entrant-org','entrant-contact','entrant-key-id','entrant-public-key']) byId(id).addEventListener('input', syncRegistration);
 document.querySelectorAll('input[name="submission-route"]').forEach(input => input.addEventListener('change', syncRoute));
 byId('reg-copy').addEventListener('click', async () => {
   try { await navigator.clipboard.writeText(byId('reg-json').textContent); byId('reg-status').textContent = 'Copied.'; } catch (e) { byId('reg-status').textContent = 'Copy failed; select the text above.'; }
