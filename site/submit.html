@@ -472,7 +472,7 @@ function syncRegistration(){
 // Whether the edit is allowed is decided by check_entrant_owner when the pull
 // request opens; this only saves the participant from retyping what is already
 // published.
-const RAW = 'https://raw.githubusercontent.com/Social-Atoms/social-sim-arena/main/entrants/';
+const RAW = 'https://raw.githubusercontent.com/assassin808/social-sim-arena-e2e-test/main/entrants/';
 async function loadRegistration(){
   const id = byId('load-id').value.trim(), status = byId('load-status');
   if (!/^[a-z0-9][a-z0-9_.-]{1,47}$/.test(id)) { status.textContent = 'Enter your entrant id.'; return; }

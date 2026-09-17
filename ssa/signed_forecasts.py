@@ -21,8 +21,8 @@ PATH = '/api/v1/forecasts'
 # rehearsal fork cannot be replayed here, and that holds whoever knows it. It
 # must match SSA_INTAKE_AUDIENCE on the deployment, so changing one without the
 # other invalidates every signature at once; change them in the same commit.
-ORIGIN = 'https://social-simulation-arena.com'
-AUDIENCE = 'ssa-production-v1'
+ORIGIN = 'https://social-sim-arena-e2e-test.vercel.app'
+AUDIENCE = 'ssa-e2e-signed-rehearsal'
 MAX_BYTES = 65536
 SAFE = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9_.-]{0,63}$')
 FIELDS = ('entrant', 'key-id', 'timestamp', 'request-id', 'signature')

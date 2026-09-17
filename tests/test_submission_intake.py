@@ -307,7 +307,7 @@ class SubmissionPrototype(unittest.TestCase):
         fetches = re.findall(r"fetch\(([^,)]+)", self.page)
         self.assertEqual(fetches, ["target", "source"])
         self.assertIn("const RAW = 'https://raw.githubusercontent.com/"
-                      "Social-Atoms/social-sim-arena/main/entrants/'", self.page)
+                      "assassin808/social-sim-arena-e2e-test/main/entrants/'", self.page)
         self.assertNotIn("localStorage", self.page)
 
     def test_the_browser_test_signs_with_the_published_test_key(self):
