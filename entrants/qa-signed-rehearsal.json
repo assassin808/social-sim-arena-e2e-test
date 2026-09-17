@@ -1,0 +1,14 @@
+{
+  "entrant_id": "qa-signed-rehearsal",
+  "name": "Isolated signed POST QA",
+  "type": "participant",
+  "github": "assassin808",
+  "status": "active",
+  "keys": [
+    {
+      "id": "qa-k1",
+      "alg": "ed25519",
+      "public": "2jb1eBf3DMa2qAHOx+Vx6aU2NJJsQgSwDxjcV3GNWXc="
+    }
+  ]
+}
