@@ -32,7 +32,7 @@ jobs:
           set -euo pipefail
           mkdir -p /tmp/seal-reports
           git rev-parse HEAD | tee /tmp/seal-reports/implementation-sha.txt
-          for suite in seal replies stamps landing_audit spend crowd search contract; do
+          for suite in seal replies stamps landing_audit spend_ceiling crowd search contract_consistency; do
             python "tests/test_${suite}.py" 2>&1 | tee "/tmp/seal-reports/${suite}.log"
           done
           echo 'Synthetic fixtures and ephemeral keys only; no provider calls or deployment.' >> "$GITHUB_STEP_SUMMARY"
