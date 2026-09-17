@@ -55,7 +55,7 @@ From `ssa/batches.py`, `ssa/series.py`, `ssa/adapters/civiqs.py`, `ssa/resolve.p
 and `docs/sources/civiqs.md`:
 
 1. The deadline is strictly the question's own `lock_at`. Friday is Civiqs'
-   target observation day, not a submission deadline shared by every question.
+   target observation day, not one lock time shared by every question.
 2. The registered Civiqs series declares `weekday=4`, archives daily and reads
    the displayed dashboard value. The underlying model's Thursday date is not
    rewritten into a Friday raw survey result.
