@@ -1,5 +1,5 @@
 {
-  "run_at": "2026-09-18T06:57:15.953729+00:00",
+  "run_at": "2026-09-18T12:51:50.036046+00:00",
   "endpoint": "https://social-sim-arena-e2e-agent.vercel.app/forecast",
   "mode": "scheduled-fresh-request",
   "models": [
@@ -8,8 +8,38 @@
       "initial": [
         {
           "status": 200,
-          "seconds": 2.785,
-          "generation": "gen-1789714637-cfBQlIQynvEdLqjJAOTv",
+          "seconds": 4.879,
+          "generation": "gen-1789735911-eyfd7v2sZPVQIjrlsNAQ",
+          "cost": "0",
+          "cache": "miss",
+          "forecast": {
+            "mean": 50,
+            "sd": 10.0
+          }
+        }
+      ],
+      "replay": {
+        "status": 200,
+        "seconds": 0.12,
+        "generation": "gen-1789735911-eyfd7v2sZPVQIjrlsNAQ",
+        "cost": "0",
+        "cache": "hit",
+        "forecast": {
+          "mean": 50,
+          "sd": 10.0
+        }
+      },
+      "initial_all_passed": true,
+      "race_same_generation": null,
+      "replay_cache_hit": true
+    },
+    {
+      "model": "nex-agi/nex-n2.5-mini:free",
+      "initial": [
+        {
+          "status": 200,
+          "seconds": 3.15,
+          "generation": "gen-1789735915-Okky4r4wPnTy3WPD5Xg5",
           "cost": "0",
           "cache": "miss",
           "forecast": {
@@ -20,8 +50,8 @@
       ],
       "replay": {
         "status": 200,
-        "seconds": 0.259,
-        "generation": "gen-1789714637-cfBQlIQynvEdLqjJAOTv",
+        "seconds": 0.155,
+        "generation": "gen-1789735915-Okky4r4wPnTy3WPD5Xg5",
         "cost": "0",
         "cache": "hit",
         "forecast": {
@@ -34,41 +64,11 @@
       "replay_cache_hit": true
     },
     {
-      "model": "nex-agi/nex-n2.5-mini:free",
-      "initial": [
-        {
-          "status": 200,
-          "seconds": 0.802,
-          "generation": "gen-1789714639-Z1lmvESYVm2OdqO8C6Dt",
-          "cost": "0",
-          "cache": "miss",
-          "forecast": {
-            "mean": 50,
-            "sd": 1
-          }
-        }
-      ],
-      "replay": {
-        "status": 200,
-        "seconds": 0.352,
-        "generation": "gen-1789714639-Z1lmvESYVm2OdqO8C6Dt",
-        "cost": "0",
-        "cache": "hit",
-        "forecast": {
-          "mean": 50,
-          "sd": 1
-        }
-      },
-      "initial_all_passed": true,
-      "race_same_generation": null,
-      "replay_cache_hit": true
-    },
-    {
       "model": "google/gemma-4-31b-it:free",
       "initial": [
         {
           "status": 502,
-          "seconds": 0.393,
+          "seconds": 0.562,
           "generation": null,
           "cost": null,
           "cache": null
@@ -84,25 +84,25 @@
       "initial": [
         {
           "status": 200,
-          "seconds": 2.697,
-          "generation": "gen-1789714640-x7bZLemSlH0FKWYex5uB",
+          "seconds": 2.999,
+          "generation": "gen-1789735919-QmCDDB5wA6TSAGgJqeEj",
           "cost": "0",
           "cache": "miss",
           "forecast": {
-            "mean": 50,
-            "sd": 5
+            "mean": 50.0,
+            "sd": 10.0
           }
         }
       ],
       "replay": {
         "status": 200,
-        "seconds": 0.249,
-        "generation": "gen-1789714640-x7bZLemSlH0FKWYex5uB",
+        "seconds": 0.098,
+        "generation": "gen-1789735919-QmCDDB5wA6TSAGgJqeEj",
         "cost": "0",
         "cache": "hit",
         "forecast": {
-          "mean": 50,
-          "sd": 5
+          "mean": 50.0,
+          "sd": 10.0
         }
       },
       "initial_all_passed": true,
@@ -112,8 +112,8 @@
   ],
   "limitations": "A single run is not long-term reliability evidence. Failures retained. Runtime Cache is not a distributed lock.",
   "_publication": {
-    "published_at": "2026-09-18T06:57:38.070037+00:00",
-    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/35317135202",
+    "published_at": "2026-09-18T12:52:14.256260+00:00",
+    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/35346924617",
     "source_commit": "308ef84043508a8f5ebf4938646efc208256840a"
   }
 }
