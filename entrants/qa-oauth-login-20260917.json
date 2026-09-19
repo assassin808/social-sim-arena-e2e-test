@@ -1,0 +1,15 @@
+{
+  "entrant_id": "qa-oauth-login-20260917",
+  "github": "assassin808",
+  "keys": [
+    {
+      "alg": "ed25519",
+      "id": "manual-k1",
+      "public": "cDY6VcqVzyshwpasfh7Y2I4xn9F4uVdB9bHNE0x4mRo=",
+      "revoked": false
+    }
+  ],
+  "name": "OAuth registration rehearsal",
+  "organization": "Isolated QA",
+  "type": "participant"
+}
