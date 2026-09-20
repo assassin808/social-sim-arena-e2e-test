@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-20T06:53:44.556973Z",
+  "generated_at": "2026-09-20T12:48:33.524888Z",
   "scope": "isolated-test-only",
   "entrant": "qa-persistence-public-source",
   "paid_calls": 0,
@@ -70,8 +70,8 @@
     }
   ],
   "_publication": {
-    "published_at": "2026-09-20T06:53:58.468996+00:00",
-    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/35495403366",
+    "published_at": "2026-09-20T12:48:46.303957+00:00",
+    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/35511660019",
     "source_commit": "308ef84043508a8f5ebf4938646efc208256840a"
   }
 }
