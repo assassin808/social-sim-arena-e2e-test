@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-22T06:58:33.475136Z",
+  "generated_at": "2026-09-22T12:52:46.312235Z",
   "scope": "isolated-test-only",
   "entrant": "qa-persistence-public-source",
   "paid_calls": 0,
@@ -50,7 +50,7 @@
       "lock_at": "2026-09-18T14:00:00Z",
       "release_at": "2026-09-29T14:00:00Z",
       "mode": "live_test",
-      "status": "blocked",
+      "status": "pending",
       "score": null,
       "filed_at": "2026-09-15T23:45:54.063135Z",
       "forecast": [
@@ -65,13 +65,13 @@
         "Mirzapur_(film)",
         "Alexander_Zverev"
       ],
-      "target_days_archived": 0,
-      "reason": "HTTPError: 404 Client Error: Not Found for url: https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/2026/09/21"
+      "target_days_archived": 1,
+      "reason": "real release time has not arrived; no outcome or score invented"
     }
   ],
   "_publication": {
-    "published_at": "2026-09-22T06:58:50.407518+00:00",
-    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/35697271040",
+    "published_at": "2026-09-22T12:53:08.395910+00:00",
+    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/35729830419",
     "source_commit": "308ef84043508a8f5ebf4938646efc208256840a"
   }
 }
