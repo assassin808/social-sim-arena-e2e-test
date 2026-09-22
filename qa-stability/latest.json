@@ -1,5 +1,5 @@
 {
-  "run_at": "2026-09-22T12:53:15.096925+00:00",
+  "run_at": "2026-09-22T18:48:45.202354+00:00",
   "endpoint": "https://social-sim-arena-e2e-agent.vercel.app/forecast",
   "mode": "scheduled-fresh-request",
   "models": [
@@ -8,7 +8,7 @@
       "initial": [
         {
           "status": 502,
-          "seconds": 1.558,
+          "seconds": 2.137,
           "generation": null,
           "cost": null,
           "cache": null
@@ -24,7 +24,7 @@
       "initial": [
         {
           "status": 502,
-          "seconds": 0.333,
+          "seconds": 0.33,
           "generation": null,
           "cost": null,
           "cache": null
@@ -40,7 +40,7 @@
       "initial": [
         {
           "status": 502,
-          "seconds": 0.328,
+          "seconds": 0.37,
           "generation": null,
           "cost": null,
           "cache": null
@@ -56,7 +56,7 @@
       "initial": [
         {
           "status": 502,
-          "seconds": 0.356,
+          "seconds": 0.308,
           "generation": null,
           "cost": null,
           "cache": null
@@ -70,8 +70,8 @@
   ],
   "limitations": "A single run is not long-term reliability evidence. Failures retained. Runtime Cache is not a distributed lock.",
   "_publication": {
-    "published_at": "2026-09-22T12:53:32.197033+00:00",
-    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/35729879764",
+    "published_at": "2026-09-22T18:49:20.129046+00:00",
+    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/35769640077",
     "source_commit": "308ef84043508a8f5ebf4938646efc208256840a"
   }
 }
