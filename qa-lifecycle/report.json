@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-24T18:49:09.205129Z",
+  "generated_at": "2026-09-25T01:11:42.648712Z",
   "scope": "isolated-test-only",
   "entrant": "qa-persistence-public-source",
   "paid_calls": 0,
@@ -50,7 +50,7 @@
       "lock_at": "2026-09-18T14:00:00Z",
       "release_at": "2026-09-29T14:00:00Z",
       "mode": "live_test",
-      "status": "pending",
+      "status": "blocked",
       "score": null,
       "filed_at": "2026-09-15T23:45:54.063135Z",
       "forecast": [
@@ -66,12 +66,12 @@
         "Alexander_Zverev"
       ],
       "target_days_archived": 3,
-      "reason": "real release time has not arrived; no outcome or score invented"
+      "reason": "HTTPError: 404 Client Error: Not Found for url: https://wikimedia.org/api/rest_v1/metrics/pageviews/top/en.wikipedia/all-access/2026/09/24"
     }
   ],
   "_publication": {
-    "published_at": "2026-09-24T18:49:24.022737+00:00",
-    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/36043849112",
+    "published_at": "2026-09-25T01:12:00.782036+00:00",
+    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/36080917678",
     "source_commit": "308ef84043508a8f5ebf4938646efc208256840a"
   }
 }
