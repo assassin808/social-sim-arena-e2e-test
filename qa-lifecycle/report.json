@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-29T12:59:26.657595Z",
+  "generated_at": "2026-09-29T18:51:47.480405Z",
   "scope": "isolated-test-only",
   "entrant": "qa-persistence-public-source",
   "paid_calls": 0,
@@ -50,8 +50,8 @@
       "lock_at": "2026-09-18T14:00:00Z",
       "release_at": "2026-09-29T14:00:00Z",
       "mode": "live_test",
-      "status": "pending",
-      "score": null,
+      "status": "resolved",
+      "score": 0.9940517785245819,
       "filed_at": "2026-09-15T23:45:54.063135Z",
       "forecast": [
         "Elizabeth_Holmes",
@@ -65,13 +65,24 @@
         "Mirzapur_(film)",
         "Alexander_Zverev"
       ],
-      "target_days_archived": 7,
-      "reason": "real release time has not arrived; no outcome or score invented"
+      "outcome": [
+        "Lizzie_Borden",
+        "2026_Asian_Games",
+        "India_at_the_2026_Asian_Games",
+        ".xxx",
+        "2026_Asian_Games_medal_table",
+        "Ted_Kaczynski",
+        "Aileen_Wuornos",
+        "Monster:_The_Lizzie_Borden_Story",
+        "Resident_Evil_(2026_film)",
+        "Deaths_in_2026"
+      ],
+      "resolved_at": "2026-09-29T18:51:47.480405Z"
     }
   ],
   "_publication": {
-    "published_at": "2026-09-29T12:59:42.598753+00:00",
-    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/36571832086",
+    "published_at": "2026-09-29T18:52:03.542611+00:00",
+    "run_url": "https://github.com/assassin808/social-sim-arena-e2e-test/actions/runs/36615036295",
     "source_commit": "308ef84043508a8f5ebf4938646efc208256840a"
   }
 }
